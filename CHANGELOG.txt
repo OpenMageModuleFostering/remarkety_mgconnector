@@ -1,6 +1,18 @@
+1.5.2.2
+-------
+Make sure "orders/create" event is only sent once the order is actually placed
+
+1.5.2.1
+-------
+Bugfix - product updated webhooks should ignore root category
+
+1.5.2.0
+-------
+Bugfix - item tax amount invalid
+
 1.5.1.9
 -------
-Send order updated event only when order status is changed
+Send order updated events only when order status is changed
 
 1.5.1.8
 -------

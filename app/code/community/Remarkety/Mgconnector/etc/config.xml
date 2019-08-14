@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Remarkety_Mgconnector>
-            <version>1.5.1.9</version>
+            <version>1.5.2.2</version>
         </Remarkety_Mgconnector>
     </modules>
     <global>
@@ -45,6 +45,15 @@
             </mgconnector>
         </blocks>
         <events>
+            <sales_order_place_after>
+                <observers>
+                    <remarkety_sales_order_place_after_observer>
+                        <type>singleton</type>
+                        <class>mgconnector/observer</class>
+                        <method>triggerOrderPlaced</method>
+                    </remarkety_sales_order_place_after_observer>
+                </observers>
+            </sales_order_place_after>
             <sales_order_save_commit_after>
                 <observers>
                     <remarkety_order_save_after_observer>

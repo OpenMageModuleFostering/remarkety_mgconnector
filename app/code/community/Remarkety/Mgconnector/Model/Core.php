@@ -278,7 +278,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
                     }
                     $this->_categoryCache[$categoryId] = implode(" / ", $categoryTree);
                 }
-                $categories[] = $this->_categoryCache[$categoryId];
+                if(!empty($this->_categoryCache[$categoryId]))
+                    $categories[] = $this->_categoryCache[$categoryId];
             }
         }
         //if no categories found, get from parent product

@@ -99,6 +99,10 @@ class Remarkety_Mgconnector_Model_Observer
         Mage::log($logMsg, $logLevel, REMARKETY_LOG);
     }
 
+    public function triggerOrderPlaced($observer){
+        $order = $observer->getOrder();
+        $order->setRmIsNew(true);
+    }
     public function triggerOrderUpdate($observer){
         $order = $observer->getOrder();
         if(!$this->_configHelp->isWebhooksEnabled($order->getStore()->getId())){
@@ -107,7 +111,7 @@ class Remarkety_Mgconnector_Model_Observer
 
         $eventType = self::EVENT_ORDERS_UPDATED;
         $originalData = $order->getOrigData();
-        if ($originalData === null) {
+        if ($order->getRmIsNew()) {
             $eventType = self::EVENT_ORDERS_CREATED;
         } else {
             if(!empty($originalData['status']) && $originalData['status'] == $order->getStatus()){
@@ -326,6 +330,12 @@ class Remarkety_Mgconnector_Model_Observer
 
                 $images = $this->getProductImages($item->getProduct());
 
+                $tax = (float)$item->getTaxAmount();
+                $qty = (float)$item->getQtyOrdered();
+                $itemTax = 0;
+                if($tax > 0 && $qty > 0){
+                    $itemTax = $tax / $qty;
+                }
                 $itemArr = array(
                     'product_parent_id' => $rmCore->getProductParentId($item->getProduct()),
                     'product_id' => $item->getProductId(),
@@ -338,7 +348,7 @@ class Remarkety_Mgconnector_Model_Observer
                     'product_exists' => $enabled,
                     'url' => $rmCore->getProdUrl($item->getProduct(), $storeUrl, $store_id),
                     'images' => $images,
-                    'tax_amount' => (float)$item->getTaxAmount(),
+                    'tax_amount' => $itemTax,
                     'discount' => (float)$item->getDiscountAmount()
                 );
 
@@ -443,9 +453,12 @@ class Remarkety_Mgconnector_Model_Observer
          */
         $rmCore = Mage::getModel("mgconnector/core");
 
+        $originalStore = Mage::app()->getStore();
+        Mage::app()->setCurrentStore($storeId);
         $store = Mage::App()->getStore($storeId);
         $storeUrl = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB, true);
 
+        $product = $rmCore->loadProduct($product->getId());
         $categories = $rmCore->_productCategories($product);
         $categories = array_map(function ($val) {
             return array(
@@ -462,9 +475,6 @@ class Remarkety_Mgconnector_Model_Observer
         $stocklevel = (int)Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($product)->getQty();
 
-        $originalStore = Mage::app()->getStore();
-        Mage::app()->setCurrentStore($storeId);
-        $product = $rmCore->loadProduct($product->getId());
         $stores = $product->getStoreIds();
         if(!in_array($storeId, $stores)){
             $enabled = false;
