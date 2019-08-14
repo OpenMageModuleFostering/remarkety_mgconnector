@@ -18,6 +18,8 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
          */
         $wtModel = Mage::getModel('mgconnector/webtracking');
 
+
+
         $stores = array();
 
         foreach (Mage::app()->getWebsites() as $_website) {
@@ -34,7 +36,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
 
                 foreach ($_group->getStores() as $_store) {
                     $isInstalled = $_store->getConfig(Remarkety_Mgconnector_Model_Install::XPATH_INSTALLED);
-                    $webtracking = $wtModel->getRemarketyPublicId($_store->getStoreId());
+                    $webtracking = $wtModel->isEnabled($_store->getStoreId());
                     $stores[$_website->getCode()]['store_groups'][$_group->getGroupId()]['store_views'][$_store->getCode()] = array(
                         'name' => $_store->getName(),
                         'id' => $_store->getStoreId(),
@@ -57,5 +59,14 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
         } catch (Exception $ex){
             return false;
         }
+    }
+
+    public function isWebhooksEnabled(){
+        /**
+         * @var  $configHelper Remarkety_Mgconnector_Helper_Configuration
+         */
+        $configHelper = Mage::helper('mgconnector/configuration');
+
+        return $configHelper->isWebhooksEnabled();
     }
 }

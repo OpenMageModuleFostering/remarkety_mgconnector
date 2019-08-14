@@ -55,6 +55,15 @@ class Remarkety_Mgconnector_Model_Install
     const XPATH_INSTALLED = 'remarkety/mgconnector/installed';
 
     /**
+     *
+     */
+    const XPATH_WEBHOOKS_ENABLED = 'remarkety/mgconnector/webhooks';
+
+    const XPATH_WEBTRACKING_ENABLED = 'remarkety/mgconnector/webtracking';
+
+    const XPATH_PRODUCT_WEBHOOKS_DISABLED = 'remarkety/mgconnector/product_webhooks_disable';
+
+    /**
      * Install data
      *
      * @var array
@@ -78,7 +87,8 @@ class Remarkety_Mgconnector_Model_Install
         $this->_data['terms'] = array_key_exists('terms', $data) ? ($data['terms']== '1' ? 'true' : 'false') : null;
         $this->_data['store_id'] = array_key_exists('store_id', $data) ? $data['store_id'] : null;
         $this->_data['key'] = array_key_exists('key', $data) ? $data['key'] : null;
-
+        $this->_data['http_user'] = array_key_exists('http_user', $data) ? $data['http_user'] : null;
+        $this->_data['http_password'] = array_key_exists('http_password', $data) ? $data['http_password'] : null;
         return $this;
     }
 
@@ -207,6 +217,9 @@ class Remarkety_Mgconnector_Model_Install
             $this->_data['store_id'] = (array)$this->_data['store_id'];
         }
 
+        $httpUser = array_key_exists('http_user', $this->_data) ? $this->_data['http_user'] : '';
+        $httpPassword = array_key_exists('http_password', $this->_data) ? $this->_data['http_password'] : '';
+
         // Create request for each store view separately
         foreach($this->_data['store_id'] as $_storeId) {
             $store = Mage::getModel('core/store')->load($_storeId);
@@ -228,6 +241,8 @@ class Remarkety_Mgconnector_Model_Install
                 'lastName' => $this->_data['last_name'],
                 'phone' => $this->_data['phone'],
                 'storeFrontUrl' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
+                'httpUser'  => $httpUser,
+                'httpPassword'  => $httpPassword,
                 'viewName' => $store->name,
                 'ip'    => Mage::helper('core/http')->getRemoteAddr()
                 )
@@ -269,6 +284,9 @@ class Remarkety_Mgconnector_Model_Install
             $this->_data['store_id'] = (array)$this->_data['store_id'];
         }
 
+        $httpUser = array_key_exists('http_user', $this->_data) ? $this->_data['http_user'] : '';
+        $httpPassword = array_key_exists('http_password', $this->_data) ? $this->_data['http_password'] : '';
+
         // Create request for each store view separately
         foreach($this->_data['store_id'] as $_storeId) {
             $store = Mage::getModel('core/store')->load($_storeId);
@@ -288,6 +306,8 @@ class Remarkety_Mgconnector_Model_Install
                 ),
                 'isNewUser' => false,
                 'storeFrontUrl' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
+                'httpUser'  => $httpUser,
+                'httpPassword'  => $httpPassword,
                 'viewName' => $store->name,
                 'ip'    => Mage::helper('core/http')->getRemoteAddr()
                 )
@@ -471,6 +491,14 @@ class Remarkety_Mgconnector_Model_Install
                  */
                 $m = Mage::getModel('mgconnector/webtracking');
                 $m->setRemarketyPublicId($storeId, $response['storePublicId']);
+
+                $m->setEnabled($storeId, true);
+
+                Mage::getModel('core/config')->saveConfig(
+                    self::XPATH_WEBHOOKS_ENABLED,
+                    true,
+                    'default'
+                );
             }
 
             $connection->commit();

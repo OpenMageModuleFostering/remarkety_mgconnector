@@ -34,11 +34,10 @@ abstract class Remarkety_Mgconnector_Model_Extension_RewardPoints_Observer_Abstr
         $customerData['rewards'] = $rewardPointsData;
 
         //queue customer update event
-        $this->_queueRequest(
+        $this->makeRequest(
             'customers/update',
             $customerData,
-            1,
-            null
+            $this->_customer->getStore()->getId()
         );
 
         return $this;

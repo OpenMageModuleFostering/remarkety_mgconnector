@@ -14,7 +14,8 @@ define('REMARKETY_MGCONNECTOR_DATA', 'DATA');
 define('REMARKETY_MGCONNECTOR_MAGE_VERSION', 'MAGENTO_VERSION');
 define('REMARKETY_MGCONNECTOR_EXT_VERSION', 'PLUGIN_VERSION');
 define('REMARKETY_EXECUTION_TIME', 'EXECUTION_TIME_MS');
-define('REMARKETY_LOG', 'remarkety_mgconnector.log');
+if (!defined("REMARKETY_LOG"))
+    define('REMARKETY_LOG', 'remarkety_mgconnector.log');
 define('REMARKETY_LOG_SEPARATOR', '|');
 
 class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
@@ -39,6 +40,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
     private $response_mask = array(
         'customer' => array(
             'entity_id',
+            'dob',
             'firstname',
             'lastname',
             'email',
@@ -103,6 +105,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
                     'parent_item_id',
                     'categories',
                     'qty',
+                    'price',
+                    'price_incl_tax',
                     'base_price',
                     'base_price_incl_tax',
                     'name',
@@ -144,6 +148,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
                     'parent_item_id',
                     'product_id',
                     'qty_ordered',
+                    'price',
+                    'price_incl_tax',
                     'base_price',
                     'base_price_incl_tax',
                     'sku',
@@ -430,12 +436,29 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
                 $rewardPointsInstance->modifyCustomersCollection($customersCollection);
             }
 
-            // $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
-
+            /**
+             * @var $store Mage_Core_Model_Store
+             */
             $store = Mage::getModel('core/store')->load($mage_store_view_id);
-            $name = $store->getName();
-//            $viewName = Mage::getModel(""); XXX
-            $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id)); //$mage_store_id));
+            $website = $store->getWebsite();
+            $stores_in_website = $website->getStoreIds();
+            $singleStore = !empty($stores_in_website) &&
+                            count($stores_in_website) === 1 &&
+                            isset($stores_in_website[$mage_store_view_id]) &&
+                            $stores_in_website[$mage_store_view_id] == $mage_store_view_id;
+
+            $customerShare = Mage::helper('mgconnector/configuration')->allowCustomerSharing();
+            if($customerShare){
+                $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, 'Customer account sharing is enabled, not filtering by store', '');
+            } elseif($singleStore) {
+                //returns all customers for the website, includes admin (store_id = 0)
+                $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, 'Single store in website - using website_id filter', '');
+                $customersCollection->addFieldToFilter('website_id', array('eq' => $website->getId()));
+            } else {
+                //returns only customer in a specific store view
+                $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, 'Multi store in website - using store_id filter', '');
+                $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
+            }
             if ($updated_at_min != null) {
                 $customersCollection->addAttributeToFilter('updated_at', array('gt' => $updated_at_min));
             }
@@ -636,7 +659,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
 //                $itemsCollection->join(
 //
 //                );
-                $itemsCollection = $order->getAllVisibleItems();
+                    $itemsCollection = $order->getAllVisibleItems();
 
                     foreach ($itemsCollection as $item) {
                         $product = null;
@@ -790,7 +813,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
                 $currency = $quoteData['quote_currency_code'];
                 $quoteData['currency'] = $this->_currencyInfo($currency);
 
-                $quoteData['checkout_url'] = $this->getCartRecoveryURL($quoteData['entity_id']);
+                $quoteData['checkout_url'] = $this->getCartRecoveryURL($quoteData['entity_id'], $mage_store_view_id);
 
                 foreach ($quote->getItemsCollection() as $item) {
                     $quoteItem = array();
@@ -854,7 +877,11 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
         try {
             try {
                 $store = Mage::app()->getStore($mage_store_id);
-                Mage::app()->setCurrentStore($store);
+                if($store) {
+                    //make sure current store not using flat catalog in this request (otherwise, disabled products wont be included)
+                    $store->setConfig('catalog/frontend/flat_catalog_product', 0);
+                    Mage::app()->setCurrentStore($store);
+                }
             } catch (Exception $ex) {
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_ERROR, "Cannot set active store", $myArgs);
             }
@@ -1110,9 +1137,13 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
 
         try {
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+            /**
+             * @var $rule Mage_SalesRule_Model_Rule
+             */
             $rule = Mage::getModel('salesrule/rule')->load($rule_id);
 
-            if (empty($rule)) {
+            $ruleId = empty($rule) ? null : $rule->getId();
+            if (empty($ruleId)) {
                 $msg = 'Given promotion ID does not exist';
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg, $myArgs);
                 return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg);
@@ -1247,6 +1278,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
         $this->_debug(__FUNCTION__, "Start - prod id " . $product->getId(), null, '');
         $url = '';
         $visibility = $product->getVisibility();
+        $parentProduct = null;
         if ($visibility == 1 || !in_array($product->type_id, $this->_groupedTypes)) {
             $parentId = null;
             if (!$this->simpleProductsStandalone) {
@@ -1262,6 +1294,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
             if (!is_null($parentId)) {
                 $this->_debug(__FUNCTION__, "parent id " . $parentId, null, '');
                 $product_id = $parentId;
+                $parentProduct = $this->loadProduct($parentId);
             } else {
                 $product_id = $product->getId();
             }
@@ -1269,30 +1302,38 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
             $product_id = $product->getId();
         }
 
+
         try {
-            $url = Mage::helper('mgconnector/urls')->getValue($product_id, $mage_store_view_id);
-            if (!empty($url)) {
-                $url = $storeUrl . $url;
-                if (Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id)) {
-                    $url .= Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id);
+            $useInternalMethods = Mage::helper('mgconnector/configuration')->getProductUrlFromMagento();
+            if(!$useInternalMethods){
+                $url = Mage::helper('mgconnector/urls')->getValue($product_id, $mage_store_view_id);
+                if (!empty($url)) {
+                    $url = $storeUrl . $url;
+                    if (Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id)) {
+                        $url .= Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id);
+                    }
                 }
+                $this->_debug(__FUNCTION__, "after setStoreId getProductUrl: " . $url, null, '');
             }
-            $this->_debug(__FUNCTION__, "after setStoreId getProductUrl: " . $url, null, '');
         } catch (Exception $e) {
             $this->_log(__FUNCTION__, "failed after setStoreId: ", $e->getMessage(), '');
         }
 
-        if (!empty($url)) {
-            return $url;
-        } else {
-            $getProductUrl = $product->getProductUrl();
-            $this->_debug(__FUNCTION__, "getProductUrl: " . $getProductUrl, null, '');
-            return $getProductUrl;
+        if(empty($url) && !empty($parentProduct)){
+            $url = $parentProduct->getProductUrl();
         }
+
+        if(empty($url) && !empty($product)){
+            $url = $product->getProductUrl();
+        }
+
+        $this->_debug(__FUNCTION__, "getProductUrl: " . $url, null, '');
+
+        return $url;
 
     }
 
-    public function getImageUrl($product, $type = 'image', $mage_store_view_id)
+    public function getImageUrl($product, $type = 'image', $mage_store_view_id = null)
     {
 
         $url = '';
@@ -1311,7 +1352,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
 
             if (!is_null($parentId)) {
                 $this->_debug(__FUNCTION__, null, "parent id: " . $parentId, '');
-                $product = $this->loadProduct($parentId, $mage_store_view_id);
+                $product = $this->loadProduct($parentId);
             }
         } else {
             $this->_debug(__FUNCTION__, null, "configurable prod id" . $product->getId(), '');
@@ -1335,11 +1376,16 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
 
     }
 
-    public function getCartRecoveryURL($cart_id)
+    public function getCartRecoveryURL($cart_id, $storeId = null)
     {
         $recovery = Mage::getModel('mgconnector/recovery');
         $id = $recovery->encodeQuoteId($cart_id);
-        $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/recovery/cart/quote_id/' . $id;
+        if($storeId != null) {
+            $url = (string)Mage::app()->getStore($storeId)->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/recovery/cart/quote_id/' . $id;
+        } else {
+            $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/recovery/cart/quote_id/' . $id;
+        }
+
         return $url;
     }
 
@@ -1389,7 +1435,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
             $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
 
-            if (empty($subscriber)) {
+            $data = $subscriber->getData();
+            if (empty($data)) {
                 $msg = 'Given subscriber does not exist';
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg, $myArgs);
                 return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg);
@@ -1417,7 +1464,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
         return $this->configurable_product_model;
     }
 
-    private function loadProduct($productId)
+    public function loadProduct($productId)
     {
         if (!isset($this->_productCache[$productId])) {
             $this->_productCache[$productId] = Mage::getModel("catalog/product")->load($productId);
@@ -1504,6 +1551,222 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
         $keys = array('categories-to-ignore', 'configurable_standalone');
 
         $this->simpleProductsStandalone = Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone');
+    }
+
+    public function getQueueSize($mage_store_view_id)
+    {
+        register_shutdown_function('handleShutdown');
+        $myArgs = func_get_args();
+
+        try {
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+//            $store_views = $this->_store_views_in_group($mage_store_view_id);
+            $queue = Mage::getModel('mgconnector/queue')->getCollection();
+            $queue->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
+            $count = $queue->getSize();
+            $ret = array('count' => $count);
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, '');
+            return $this->_wrapResponse($ret, REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
+    }
+
+    public function getQueueItems($mage_store_view_id, $limit = null, $page = null, $minId = null, $maxId = null)
+    {
+        try {
+            $myArgs = func_get_args();
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+
+            $collection = Mage::getModel('mgconnector/queue')->getCollection();
+            $collection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
+
+            if(!empty($minId)){
+                $collection->addFieldToFilter('queue_id', array('gteq' => $minId));
+            }
+
+            if(!empty($maxId)){
+                $collection->addFieldToFilter('queue_id', array('lteq' => $maxId));
+            }
+
+            $pageSize = null;
+            $pageNumber = 1;        // Note that page numbers begin at 1 and remarkety starts at 0
+            if ($limit != null) {
+                $pageSize = $limit;
+            }
+
+            if ($page != null) {
+                if (!is_null($pageSize)) {
+                    $pageNumber = $page + 1;    // Note that page numbers begin at 1 and remarkety starts at 0
+                }
+            }
+
+            if (!is_null($pageSize)) {
+                $collection->getSelect()->limit($pageSize, ($pageNumber-1)*$pageSize);
+            }
+            $data = array();
+            foreach ($collection as $queueEvent) {
+                $event = $queueEvent->toArray();
+                $event['payload'] = json_encode(unserialize($event['payload']));
+                $data[] = $event;
+            }
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, $myArgs);
+            return $this->_wrapResponse($data, REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
+    }
+
+    public function deleteQueueItems($mage_store_view_id, $minId = null, $maxId = null){
+        try {
+            $myArgs = func_get_args();
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+
+            $collection = Mage::getModel('mgconnector/queue')->getCollection();
+            $collection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
+
+            if(!empty($minId)){
+                $collection->addFieldToFilter('queue_id', array('gteq' => $minId));
+            }
+
+            if(!empty($maxId)){
+                $collection->addFieldToFilter('queue_id', array('lteq' => $maxId));
+            }
+
+            $toDelete = $collection->count();
+            $itemsDeleted = 0;
+
+            foreach ($collection as $item) {
+                $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, "inside delete events loop", array('id' => $item->getId()));
+                $item->delete();
+                $itemsDeleted++;
+            }
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, $myArgs);
+
+            return $this->_wrapResponse(array(
+                'totalMatching' => $toDelete,
+                'totalDeleted' => $itemsDeleted
+            ), REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
+    }
+
+    public function retryQueueItems($mage_store_view_id, $limit = null, $page = null, $minId = null, $maxId = null)
+    {
+        try {
+            $myArgs = func_get_args();
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+
+            $collection = Mage::getModel('mgconnector/queue')->getCollection();
+            $collection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
+
+            if(!empty($minId)){
+                $collection->addFieldToFilter('queue_id', array('gteq' => $minId));
+            }
+
+            if(!empty($maxId)){
+                $collection->addFieldToFilter('queue_id', array('lteq' => $maxId));
+            }
+
+            $pageSize = null;
+            $pageNumber = 1;        // Note that page numbers begin at 1 and remarkety starts at 0
+            if ($limit != null) {
+                $pageSize = $limit;
+            }
+
+            if ($page != null) {
+                if (!is_null($pageSize)) {
+                    $pageNumber = $page + 1;    // Note that page numbers begin at 1 and remarkety starts at 0
+                }
+            }
+
+            if (!is_null($pageSize)) {
+                $collection->getSelect()->limit($pageSize, ($pageNumber-1)*$pageSize);
+            }
+
+            $observer = Mage::getModel('mgconnector/observer');
+            $itemsSent = $observer->resend($collection);
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, $myArgs);
+            return $this->_wrapResponse(array(
+                'totalMatching' => $collection->count(),
+                'sentSuccessfully' => $itemsSent
+            ), REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
+    }
+
+    public function getConfig($mage_store_id, $configName, $scope)
+    {
+        register_shutdown_function('handleShutdown');
+        $myArgs = func_get_args();
+
+        try {
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+            $configPath = 'remarkety/mgconnector/' . $configName;
+            $value = null;
+            switch($scope){
+                case 'stores':
+                    $store = Mage::app()->getStore($mage_store_id);
+                    if($store) {
+                        $value = $store->getConfig($configPath);
+                    }
+                    break;
+                default:
+                    $value = Mage::getStoreConfig($configPath);
+            }
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, '');
+            return $this->_wrapResponse(Array(
+                'value' => $value
+            ), REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
+    }
+
+    public function setConfig($mage_store_id, $configName, $scope, $newValue)
+    {
+        register_shutdown_function('handleShutdown');
+        $myArgs = func_get_args();
+
+        try {
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
+            $configPath = 'remarkety/mgconnector/' . $configName;
+            $value = null;
+            if($scope !== 'stores'){
+                $scope = 'default';
+                $mage_store_id = 0;
+            }
+            Mage::getModel('core/config')->saveConfig(
+                $configPath,
+                $newValue,
+                $scope,
+                $mage_store_id
+            );
+
+            Mage::app()->getCacheInstance()->cleanType('config');
+            Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
+
+            $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, '');
+            return $this->_wrapResponse(true, REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
+        } catch (Exception $e) {
+            $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
+            return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
+        }
     }
 }
 

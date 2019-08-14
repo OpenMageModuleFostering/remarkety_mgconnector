@@ -2,7 +2,6 @@
 $stores = $this->getStoresStatus();
 $apiValid = $this->checkAPIKey();
 
-if (!$apiValid || \Remarkety_Mgconnector_Model_Install::isMultipleStores()) {
 ?>
 
 <div class="entry-edit">
@@ -16,6 +15,16 @@ if (!$apiValid || \Remarkety_Mgconnector_Model_Install::isMultipleStores()) {
                 <strong style="color: red;">Attention! Remarkety's API key is not the same as the Magento API key. Please set it <a href="<?php echo $this->getUrl('*/queue/index'); ?>">here</a></strong>
                 (<a target="_blank" href="https://support.remarkety.com/hc/en-us/articles/209184646-Synchronizing-the-API-key">More Info</a>).
             <?php endif; ?>
+
+            <?php if($this->isWebhooksEnabled()): ?>
+                <a href="<?php echo $this->getUrl('*/install/disableWebhooks') ?>"><?php echo $this->__('Disable Webhooks'); ?></a>
+            <?php else: ?>
+
+                <button id="install_webhooks_button" title="Save Category" type="button" class="scalable save" onclick="window.location = '<?php echo $this->getUrl('*/install/enableWebhooks') ?>'" style="">
+                    <span><?php echo $this->__('Enable Webhooks'); ?></span>
+                </button>
+            <?php endif; ?>
+
             <?php if (\Remarkety_Mgconnector_Model_Install::isMultipleStores()): ?>
             <table cellspacing="0" class="form-list">
                 <tbody>
@@ -67,4 +76,3 @@ if (!$apiValid || \Remarkety_Mgconnector_Model_Install::isMultipleStores()) {
         </div>
     </div>
 </div>
-<?php } ?>

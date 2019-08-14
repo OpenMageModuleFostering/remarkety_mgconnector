@@ -83,6 +83,33 @@ class Remarkety_Mgconnector_Adminhtml_QueueController extends Mage_Adminhtml_Con
                 Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/configurable_standalone', false);
             }
 
+            if(isset($params['data']['product_url_internal'])){
+                Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/product_url_internal', true);
+            } else {
+                Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/product_url_internal', false);
+            }
+
+            if(isset($params['data']['forceasyncwebhooks'])){
+                Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/forceasyncwebhooks', true);
+            } else {
+                Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/forceasyncwebhooks', false);
+            }
+
+            $customerShare = Mage::getSingleton('customer/config_share');
+            if($customerShare->isGlobalScope()) {
+                if(isset($params['data']['allow_shared_customers'])){
+                    Mage::getModel('core/config')->saveConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_SHARED_CUSTOMERS, true);
+                } else {
+                    Mage::getModel('core/config')->saveConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_SHARED_CUSTOMERS, false);
+                }
+            }
+
+            if(isset($params['data']['force_order_updates'])){
+                Mage::getModel('core/config')->saveConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_FORCE_ORDER_UPDATES, true);
+            } else {
+                Mage::getModel('core/config')->saveConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_FORCE_ORDER_UPDATES, false);
+            }
+
             Mage::app()->getCacheInstance()->cleanType('config');
             Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
 

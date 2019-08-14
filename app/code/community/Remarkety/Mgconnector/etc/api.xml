@@ -45,6 +45,24 @@
 					<getSubscriberCount translate="title" module="mgconnector">
 						<title>Get newsletter subscriber count</title>
 					</getSubscriberCount>
+					<getQueueSize translate="title" module="mgconnector">
+						<title>Returns number of events in queue for a specific store_id</title>
+					</getQueueSize>
+					<getQueueItems translate="title" module="mgconnector">
+						<title>Returns events in queue for a specific store_id</title>
+					</getQueueItems>
+					<retryQueueItems translate="title" module="mgconnector">
+						<title>Retry events in queue for a specific store_id</title>
+					</retryQueueItems>
+					<deleteQueueItems translate="title" module="mgconnector">
+						<title>Delete events in queue for a specific store_id</title>
+					</deleteQueueItems>
+					<getConfig translate="title" module="mgconnector">
+						<title>Allows to remotely read Remarkety configuration</title>
+					</getConfig>
+					<setConfig translate="title" module="mgconnector">
+						<title>Allows to remotely update Remarkety configuration</title>
+					</setConfig>
 				</methods>
 			</mgconnector_core>
 		</resources>

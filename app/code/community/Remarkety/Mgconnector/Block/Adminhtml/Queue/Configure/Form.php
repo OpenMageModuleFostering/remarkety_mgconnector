@@ -108,14 +108,63 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Configure_Form extends Mage_Ad
 
         $fieldset->addField(
             'simpleproductstandalone', 'checkbox', array(
-            'label' => $this->__('Get images and urls independently for simple products'),
-            'name' => 'data[simpleproductstandalone]',
-            'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
-                'Enable this checkbox if simple products that are related to configurable products have their own images and urls'
-            ) . '</small>',
-            'value' => 1,
-            'checked' => Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone') ? 'checked' : '',
-            'style' => 'float:left',
+                'label' => $this->__('Get images and urls independently for simple products'),
+                'name' => 'data[simpleproductstandalone]',
+                'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
+                        'Enable this checkbox if simple products that are related to configurable products have their own images and urls'
+                    ) . '</small>',
+                'value' => 1,
+                'checked' => Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone') ? 'checked' : '',
+                'style' => 'float:left',
+            )
+        );
+
+        $fieldset->addField(
+            'product_url_internal', 'checkbox', array(
+                'label' => $this->__('Use Magento\'s internal methods to get product urls'),
+                'name' => 'data[product_url_internal]',
+                'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
+                        'Enabling this feature may cause performance issues.'
+                    ) . '</small>',
+                'value' => 1,
+                'checked' => Mage::getStoreConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_INTERNAL_PRODUCT_URL) ? 'checked' : '',
+                'style' => 'float:left',
+            )
+        );
+
+        $fieldset->addField(
+            'forceasyncwebhooks', 'checkbox', array(
+                'label' => $this->__('Force webhooks to make requests asynchronous using queue'),
+                'name' => 'data[forceasyncwebhooks]',
+                'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
+                        'Enabling this checkbox will cause a delay sending Remarkety transactional events'
+                    ) . '</small>',
+                'value' => 1,
+                'checked' => Mage::getStoreConfig('remarkety/mgconnector/forceasyncwebhooks') ? 'checked' : '',
+                'style' => 'float:left',
+            )
+        );
+
+        $customerShare = Mage::getSingleton('customer/config_share');
+        if($customerShare->isGlobalScope()) {
+            $fieldset->addField(
+                'allow_shared_customers', 'checkbox', array(
+                    'label' => $this->__('Share customer accounts'),
+                    'name' => 'data[allow_shared_customers]',
+                    'value' => 1,
+                    'checked' => Mage::getStoreConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_SHARED_CUSTOMERS) ? 'checked' : '',
+                    'style' => 'float:left',
+                )
+            );
+        }
+
+        $fieldset->addField(
+            'force_order_updates', 'checkbox', array(
+                'label' => $this->__('Force order update event to Remarkety when status is not changed'),
+                'name' => 'data[force_order_updates]',
+                'value' => 1,
+                'checked' => Mage::getStoreConfig(Remarkety_Mgconnector_Helper_Configuration::XPATH_FORCE_ORDER_UPDATES) ? 'checked' : '',
+                'style' => 'float:left',
             )
         );
 

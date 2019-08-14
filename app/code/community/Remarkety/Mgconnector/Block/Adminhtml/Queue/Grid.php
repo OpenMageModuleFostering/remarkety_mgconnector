@@ -73,7 +73,8 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid extends Mage_Adminhtml_Bl
         $this->addColumn(
             'attempts', array(
             'header' => $helper->__('Attempts'),
-            'index' => 'attempts'
+            'index' => 'attempts',
+            'width' => '200px'
             )
         );
         $this->addColumn(
@@ -86,10 +87,17 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid extends Mage_Adminhtml_Bl
         );
         $this->addColumn(
             'next_attempt', array(
-            'header' => $helper->__('Next Attempt'),
-            'width' => '200px',
-            'type' => 'datetime',
-            'index' => 'next_attempt'
+                'header' => $helper->__('Next Attempt'),
+                'width' => '200px',
+                'type' => 'datetime',
+                'index' => 'next_attempt'
+            )
+        );
+
+        $this->addColumn(
+            'last_error', array(
+                'header' => $helper->__('Last Error Message'),
+                'index' => 'last_error_message'
             )
         );
 

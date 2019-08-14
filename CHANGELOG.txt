@@ -1,3 +1,65 @@
+1.5.1.9
+-------
+Send order updated event only when order status is changed
+
+1.5.1.8
+-------
+Notices fix
+
+1.5.1.7
+-------
+Get order items tax amount and discounts
+
+1.5.1.6
+-------
+- Order item price in order currency,
+- Company name in address details
+
+1.5.1.5
+-------
+Allow customer account sharing in Remarkety
+
+1.5.1.4
+-------
+Bugfix - Single store in website can get all customers from website id
+
+1.5.1.3
+-------
+Support password-protected websites
+
+1.5.1.2
+--------
+Detect cart email from session if visitor subscribed before creating the cart
+
+1.5.1.1
+--------
+Configurable using Magento's internal methods to get product url
+
+1.5.1.0
+--------
+Support push events (for transactional emails and more)
+
+1.4.10.5
+--------
+Change webtracking source script to be from CloudFront CDN
+
+1.4.10.4
+--------
+Get customer birthday
+
+1.4.10.3
+--------
+Bugfix - Properly unsubscribe users. Before, would create an empty unsubscribe record if the email did not exist
+(Thanks to John Carlson @ www.surethingweb.com)
+
+1.4.10.2
+-------
+Products should not be taken from flat catalog table if enabled
+
+1.4.10.1
+--------
+Bugfix - Return proper cart URL on multistore websites
+
 1.4.9.5
 -------
 Get only visible items for orders

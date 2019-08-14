@@ -111,6 +111,28 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Install_Login_Form extends M
             )
         );
 
+        $fieldset->addField(
+            'http_notes', 'note', array(
+                'label' => false,
+                'name' => 'http_notes',
+                'after_element_html' => 'If your website is password-protected, please enter the credentials here:'
+            )
+        );
+
+        $fieldset->addField(
+            'http_user', 'text', array(
+                'label' => $this->__('Website Basic Auth Username:'),
+                'name' => 'data[http_user]'
+            )
+        );
+
+        $fieldset->addField(
+            'http_password', 'password', array(
+                'label' => $this->__('Website Basic Auth Password:'),
+                'name' => 'data[http_password]'
+            )
+        );
+
 //         $fieldset->addField('terms', 'checkbox', array(
 //             'label' => false,
 //             'name' => 'data[terms]',

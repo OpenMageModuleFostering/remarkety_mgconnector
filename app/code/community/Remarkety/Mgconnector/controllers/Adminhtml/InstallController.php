@@ -85,6 +85,61 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
             ->renderLayout();
     }
 
+    public function enableWebhooksAction(){
+
+        /**
+         * @var $configHelper Remarkety_Mgconnector_Helper_Configuration
+         */
+        $configHelper = Mage::helper('mgconnector/configuration');
+
+        /**
+         * @var $m Remarkety_Mgconnector_Model_Webtracking
+         */
+        $m = Mage::getModel('mgconnector/webtracking');
+
+        /**
+         * @var $req Remarkety_Mgconnector_Model_Request
+         */
+        $req = Mage::getModel('mgconnector/request');
+
+        $stores = $configHelper->getInstalledStores();
+        foreach($stores as $store_id){
+            $store = Mage::app()->getStore($store_id);
+            $publicId = $m->getRemarketyPublicId($store);
+            if(empty($publicId)){
+                //get public store id from remarkety
+                $publicId = $req->getStoreID($store_id);
+                if($publicId){
+                    $m->setRemarketyPublicId($store_id, $publicId);
+                    //webtracking was disabled (didn't have store id), make sure it is still disabled
+                    $m->setEnabled($store, false);
+                }
+            }
+        }
+
+        Mage::getModel('core/config')->saveConfig(
+            Remarkety_Mgconnector_Model_Install::XPATH_WEBHOOKS_ENABLED,
+            true,
+            'default'
+        );
+
+        Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
+        $this->_redirect('*/install/install', array('mode' => 'welcome'));
+    }
+
+    public function disableWebhooksAction(){
+        Mage::getModel('core/config')->saveConfig(
+            Remarkety_Mgconnector_Model_Install::XPATH_WEBHOOKS_ENABLED,
+            false,
+            'default'
+        );
+
+        Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
+        $this->_redirect('*/install/install', array('mode' => 'welcome'));
+    }
+
     /**
      * Enable webtracking action
      */
@@ -107,6 +162,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         $rmStoreId = $req->getStoreID($store_id);
         if($rmStoreId){
             $m->setRemarketyPublicId($store_id, $rmStoreId);
+            $m->setEnabled($store_id, true);
             Mage::app()->getCacheInstance()->cleanType('config');
             Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
         }
@@ -128,7 +184,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
          * @var $m Remarkety_Mgconnector_Model_Webtracking
          */
         $m = Mage::getModel('mgconnector/webtracking');
-        $m->setRemarketyPublicId($store_id, null);
+        $m->setEnabled($store_id, false);
         Mage::app()->getCacheInstance()->cleanType('config');
         Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
         $this->_redirect('*/install/install', array('mode' => 'welcome'));

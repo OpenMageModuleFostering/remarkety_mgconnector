@@ -35,6 +35,10 @@ class Remarkety_Mgconnector_Model_Extension_RewardPoints_Observer_MagestoreRewar
             return $this;
         }
 
+        if (Mage::registry('remarkety_customer_save_observer_executed_' . $transactionModel->getCustomerId()) || !$transactionModel->getCustomerId()) {
+            return $this;
+        }
+
         $rewardPointsCustomerModel = Mage::getModel('rewardpoints/customer')
             ->load($transactionModel->getCustomerId(), 'customer_id');
 
@@ -54,6 +58,11 @@ class Remarkety_Mgconnector_Model_Extension_RewardPoints_Observer_MagestoreRewar
         $this->_customer = Mage::getModel('customer/customer')
             ->load($transactionModel->getCustomerId());
         $this->sendCustomerUpdateRequest($rewardPointsData);
+
+        Mage::register(
+            'remarkety_customer_save_observer_executed_' . $transactionModel->getCustomerId(),
+            true
+        );
 
         return $this;
     }

@@ -3,7 +3,12 @@ class Remarkety_Mgconnector_Block_Tracking_Base extends Mage_Core_Block_Template
 {
     public function isWebtrackingActivated()
     {
-        return ($this->getRemarketyPublicId() !== false);
+        $store = Mage::app()->getStore();
+        /**
+         * @var $m Remarkety_Mgconnector_Model_Webtracking
+         */
+        $m = Mage::getModel('mgconnector/webtracking');
+        return ($m->isEnabled($store));
     }
 
     public function getRemarketyPublicId()

@@ -275,4 +275,53 @@ class Remarkety_Mgconnector_Model_Core_Api
         $ret = $myModel->getProductsCount($mage_view_id);
         return $ret;
     }
+
+    public function getQueueSize($mage_store_view_id, $returnLog = 0)
+    {
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->getQueueSize($mage_store_view_id);
+    }
+
+    public function getQueueItems($mage_store_view_id,
+                                  $limit = null,
+                                  $page = null,
+                                  $minId = null,
+                                  $maxId = null,
+                                  $returnLog = 0)
+    {
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->getQueueItems($mage_store_view_id, $limit, $page, $minId, $maxId);
+    }
+
+    public function retryQueueItems($mage_store_view_id, $limit = null, $page = null, $minId = null, $maxId = null, $returnLog = 0){
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->retryQueueItems($mage_store_view_id, $limit, $page, $minId, $maxId);
+    }
+
+    public function deleteQueueItems($mage_store_view_id, $minId = null, $maxId = null, $returnLog = 0){
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->deleteQueueItems($mage_store_view_id, $minId, $maxId);
+    }
+
+    public function getConfig($mage_store_id, $configName, $scope, $returnLog = 0){
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->getConfig($mage_store_id, $configName, $scope);
+    }
+
+    public function setConfig($mage_store_id, $configName, $scope, $newValue, $returnLog = 0){
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
+        return $myModel->setConfig($mage_store_id, $configName, $scope, $newValue);
+    }
 }
