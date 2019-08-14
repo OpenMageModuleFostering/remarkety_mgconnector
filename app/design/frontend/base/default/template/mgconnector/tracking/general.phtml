@@ -1,0 +1,24 @@
+<?php if ($this->isWebtrackingActivated()): ?>
+  <script>
+    var _rmData = _rmData || [];
+    _rmData.push(['setStoreKey', '<?php echo $this->getRemarketyPublicId(); ?>']);
+    <?php if(!$this->shouldBypassCache()): ?>
+        <?php $_rmEmail = $this->getEmail(); if ($_rmEmail): ?>_rmData.push(["setCustomer", "<?php echo $_rmEmail; ?>"]);<?php 
+        endif; ?>
+    <?php else: ?>
+        (function(d, t) {
+                var g = d.createElement(t),
+                    s = d.getElementsByTagName(t)[0];
+                g.src = '<?php echo $this->getStoreBaseUrl() . 'remarkety/webtracking/identify?noMagentoBoosterCache'; ?>&t='+(new Date().getTime())+'&r='+Math.random();
+                s.parentNode.insertBefore(g, s);
+            }(document, 'script'));
+    <?php endif; ?>
+  </script>
+
+  <script>(function(d, t) {
+      var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      g.src = 'https://s3.amazonaws.com/downloads.remarkety.com/webtracking/remarkety.js';
+      s.parentNode.insertBefore(g, s);
+    }(document, 'script'));</script>
+<?php endif; ?>

@@ -1,0 +1,68 @@
+<config>
+	<api>
+		<resources>
+			<mgconnector_core translate="title" module="mgconnector">
+				<title>Remarkety Magento Connector Core API calls</title>
+				<model>mgconnector/core_api</model>
+				<acl>remarkety/mgconnector</acl>
+				<methods>
+					<getCustomers translate="title" module="mgconnector">
+						<title>Returns Customer details</title>
+					</getCustomers>
+					<getOrders translate="title" module="mgconnector">
+						<title>Returns Order Details</title>
+					</getOrders>
+					<getQuotes translate="title" module="mgconnector">
+						<title>Returns Quote Details</title>
+					</getQuotes>
+					<getProducts translate="title" module="mgconnector">
+						<title>Returns Product Details</title>
+					</getProducts>
+					<getStoreSettings translate="title" module="mgconnector">
+						<title>Returns General Store Settings</title>
+					</getStoreSettings>
+					<getStoreOrderStatuses translate="title" module="mgconnector">
+						<title>Returns Optional Order Statuses</title>
+					</getStoreOrderStatuses>
+					<getCustomersCount translate="title" module="mgconnector">
+						<title>Returns Customers Count</title>
+					</getCustomersCount>
+					<getOrdersCount translate="title" module="mgconnector">
+						<title>Returns Orders Count</title>
+					</getOrdersCount>
+					<getProductsCount translate="title" module="mgconnector">
+						<title>Products Count</title>
+					</getProductsCount>
+					<createCoupon translate="title" module="mgconnector">
+						<title>Coupon Creation</title>
+					</createCoupon>
+                    <unsubscribe translate="title" module="mgconnector">
+                        <title>Unsubscribe</title>
+                    </unsubscribe>
+					<getSubscribers translate="title" module="mgconnector">
+						<title>Get newsletter subscribers</title>
+					</getSubscribers>
+					<getSubscriberCount translate="title" module="mgconnector">
+						<title>Get newsletter subscriber count</title>
+					</getSubscriberCount>
+				</methods>
+			</mgconnector_core>
+		</resources>
+		<resources_alias>
+			<dashboard>mgconnector_dashboard</dashboard>
+			<core>mgconnector_core</core>
+		</resources_alias>
+		<acl>
+			<resources>
+				<remarkety translate="title" module="mgconnector">
+					<title>Remarkety</title>
+					<sort_order>100</sort_order>
+					<mgconnector translate="title" module="mgconnector">
+						<title>Store Connector APIs</title>
+						<sort_order>100</sort_order>
+					</mgconnector>
+				</remarkety>
+			</resources>
+		</acl>
+	</api>
+</config>

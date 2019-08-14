@@ -1,0 +1,180 @@
+1.4.10.2
+-------
+Products should not be taken from flat catalog table if enabled
+
+1.4.10.1
+--------
+Bugfix - Return proper cart URL on multistore websites
+
+1.4.9.5
+-------
+Get only visible items for orders
+
+1.4.9.4
+-------
+Skip orders with data errors
+
+1.4.9.3
+-------
+Bugfix - Orders sync issue fixed
+1.4.9.2
+-------
+Bugfix - missing Remarkety menu item
+
+1.4.9.1
+-------
+- Webtracking support for mixed http & https store
+
+1.4.8.8
+-------
+- Bugfix - Install timeout increase
+- Bugfix - Trigger event after cache cleared
+
+1.4.8.7
+-------
+- Bugfix - Support PHP version 5.3
+
+1.4.8.6
+-------
+- Bugfix - Support PHP version 5.3
+
+1.4.8.5
+-------
+- Bugfix - Error during cron product prices send has been fixed
+
+1.4.8.4
+-------
+- Bugfix - Only get carts with email address
+- Bugfix - Only get carts for a specific store
+
+1.4.8.3
+-------
+- Bugfix - Install page had missing stores
+
+1.4.8.2
+-------
+- Bugfix - Error in installation when strict error mode is enabled in PHP
+
+1.4.8.1
+-------
+- Bugfix - Salable products incorrect value
+
+1.4.8.0
+-------
+- Add webhooks and cron job for pushing product price updates
+
+1.4.7.3
+-------
+Bugfix - get configuration settings from the request parameter instead of the headers
+
+1.4.7.2
+-------
+Override configuration items from headers
+
+1.4.7.1
+-------
+Add configuration option to get url's and images for simple products regardless of parent product
+
+1.4.7.0
+-------
+Integrate with Magestore Reward Points extension
+Bugfix for coupons date
+
+1.4.6.1
+-------
+- bugfix - Send products which have become disabled
+- Efficiently query and send inventory information
+
+1.4.6.0
+-------
+- bugfix - customer email address on webtracking bypass cache
+
+1.4.5.0
+-------
+- bugfix in install model
+- Getting categories from parent products
+
+1.4.4.0
+-------
+- Optionally attach child products to parent grouped product
+- Send Remarkety 3 types of images (small, base and thumbnail)
+
+1.4.3.0
+-------
+- Bypass store cache for website tracking
+- Changed menu titles
+
+1.4.2.0
+-------
+- Clear cache after enable/disable website tracking
+- Bugfix: Array declaration error on old PHP versions
+
+1.4.1.0
+-------
+Allow admin to change Remarkety's api key
+
+1.4.0.2
+-------
+Bug fix subscribers view id
+
+1.4.0.1
+-------
+Newsletter subscription saves the email address to the cart
+
+1.4.0.0
+-------
+Enable website tracking from the Remarkety installation menu
+
+1.3.0.1
+-------
+Automatic tagging for newsletter subscribers
+
+1.3.0.0
+-------
+- Add support for per-coupon expiration dates
+
+1.2.0.0
+-------
+- Automatic tagging for newsletter subscribers
+- Add cart recovery link
+- Payment method field added for segmentation
+
+1.1.2.7
+-------
+- Don't sync products which are not visible
+- Deal with no tags collection
+- Fix table prefix issue
+
+1.1.2.6
+-------
+- Backward compatibility for PHP 5.3
+
+1.1.0.10
+--------
+- Support installation of multiple views through the plugin
+- Error logging improvements
+
+1.1.0.9
+-------
+- API can return log for analysis
+- Return more information: Discount prices, stock levels, parent product
+- Performance improvements when fetching products
+
+1.1.0.4
+-------
+- Fix bug in creating a Magento Web Service user, when another WS user already has the same email
+
+1.1.0.3
+-------
+- Fix bug in comparing what's changed in customer observer
+
+1.1.0.1
+-------
+- Resend / delete queue events
+
+1.1.0.0
+-------
+- Implement one-click install for Magento
+- Send customer update events (signup / subscribe / unsubscribe) immediately (push)
+- Fix problem with multiple views
+- Resend / delete queue events

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="before_body_end">
+            <block type="mgconnector/tracking_general" name="mgconnector.tracking_general" template="mgconnector/tracking/general.phtml" />
+        </reference>
+    </default>
+    <catalog_product_view>
+        <reference name="before_body_end">
+            <block type="mgconnector/tracking_product" name="mgconnector.tracking_product" template="mgconnector/tracking/product_view.phtml" />
+        </reference>
+    </catalog_product_view>
+</layout>

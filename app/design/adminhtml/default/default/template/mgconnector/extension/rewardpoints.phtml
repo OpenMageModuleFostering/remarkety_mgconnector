@@ -1,0 +1,53 @@
+<?php
+/**
+ * Admin reward points extension template.
+ *
+ * @category Remarkety
+ * @package  Remarkety_Mgconnector
+ * @author   Piotr Pierzak <piotrek.pierzak@gmail.com>
+ */
+?>
+<?php
+$extensionHelper = Mage::helper('mgconnector/extension');
+
+$supportedExtensions = $this->getSupportedExtensionNames();
+$enabledExtensions = $extensionHelper->getEnabledRewardPointsExtensions();
+?>
+<div class="content-header">
+    <h3 class="icon-head"><?php echo $this->getPageHeader() ?></h3>
+</div>
+
+<div class="entry-edit">
+    <div class="entry-edit-head">
+        <h4 class="head-edit-form fieldset-legend">
+            <?php echo $this->getPageHeader() ?>
+        </h4>
+    </div>
+    <div class="fieldset">
+        <div>
+            <?php if (!empty($enabledExtensions)) : ?>
+                <?php echo $this->__('Reward point extension detected: ') ?>
+                <strong><?php echo $this->getEnabledExtensionsListHtml() ?></strong>.
+                <?php
+                echo $this->__(
+                    'Reward point information will be synchronized with Remarkety.'
+                );
+                ?>
+            <?php else: ?>
+                <?php
+                echo $this->__(
+                    'There are no reward point extensions detected. '
+                    . 'Remarkety can currently detect and synchronize reward '
+                    . 'points from %s.',
+                    implode(', ', $supportedExtensions)
+                );
+                ?>
+
+            <?php endif; ?>
+
+            <a href="<?php echo $this->getReadMoreUrl() ?>" target="_blank">
+                <?php echo $this->__('Read more.') ?>
+            </a>
+        </div>
+    </div>
+</div>

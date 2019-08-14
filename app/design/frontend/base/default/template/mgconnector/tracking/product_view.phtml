@@ -1,0 +1,10 @@
+<?php if ($this->isWebtrackingActivated()): ?>
+<script>
+  var _rmData = _rmData || [];
+  _rmData.push(['productView', {
+    productId: <?php echo json_encode($this->getActiveProduct()->getId()); ?>,
+    productCategories: <?php echo json_encode($this->getCategoryNames()); ?>,
+    productCategoriesIds: <?php echo json_encode($this->getCategoryIds()); ?>,
+  }]);
+</script>
+<?php endif; ?>

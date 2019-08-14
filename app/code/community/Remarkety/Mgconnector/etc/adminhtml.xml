@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<config>
+    <menu>
+        <mgconnector translate="title" module="mgconnector">
+            <title>Remarkety</title>
+            <sort_order>90</sort_order>
+            <children>
+                <mgconnector_configuration translate="title"
+                                           module="mgconnector">
+                    <title>Remarkety Installation</title>
+                    <sort_order>10</sort_order>
+                    <action>adminhtml/install/complete</action>
+                </mgconnector_configuration>
+                <mgconnector_queue>
+                    <title>Remarkety Configuration</title>
+                    <sort_order>20</sort_order>
+                    <action>adminhtml/queue/index</action>
+                </mgconnector_queue>
+                <mgconnector_extensions_rewardpoints>
+                    <title>Reward Points Extensions</title>
+                    <sort_order>30</sort_order>
+                    <action>adminhtml/extension_rewardPoints/index</action>
+                </mgconnector_extensions_rewardpoints>
+            </children>
+        </mgconnector>
+    </menu>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <children>
+                        <mgconnector translate="title" module="mgconnector">
+                            <title>Remarkety</title>
+                            <children>
+                                <mgconnector_configuration translate="title"
+                                                           module="mgconnector">
+                                    <title>Remarkety Configuration</title>
+                                    <sort_order>10</sort_order>
+                                </mgconnector_configuration>
+                                <mgconnector_queue>
+                                    <title>Remarkety Queue</title>
+                                    <sort_order>20</sort_order>
+                                </mgconnector_queue>
+                                <mgconnector_extensions_rewardpoints>
+                                    <title>Reward Points Extensions</title>
+                                    <sort_order>30</sort_order>
+                                </mgconnector_extensions_rewardpoints>
+                            </children>
+                        </mgconnector>
+                    </children>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

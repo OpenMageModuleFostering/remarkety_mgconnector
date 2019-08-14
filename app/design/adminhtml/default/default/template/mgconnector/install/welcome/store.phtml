@@ -1,0 +1,70 @@
+<?php
+$stores = $this->getStoresStatus();
+$apiValid = $this->checkAPIKey();
+
+if (!$apiValid || \Remarkety_Mgconnector_Model_Install::isMultipleStores()) {
+?>
+
+<div class="entry-edit">
+    <div class="entry-edit-head">
+        <h4 class="icon-head head-edit-form fieldset-legend"><?php echo $this->__('Stores Configuration') ?></h4>
+        <div class="form-buttons"></div>
+    </div>
+    <div class="fieldset " id="general">
+        <div class="hor-scroll">
+            <?php if(!$apiValid): ?>
+                <strong style="color: red;">Attention! Remarkety's API key is not the same as the Magento API key. Please set it <a href="<?php echo $this->getUrl('*/queue/index'); ?>">here</a></strong>
+                (<a target="_blank" href="https://support.remarkety.com/hc/en-us/articles/209184646-Synchronizing-the-API-key">More Info</a>).
+            <?php endif; ?>
+            <?php if (\Remarkety_Mgconnector_Model_Install::isMultipleStores()): ?>
+            <table cellspacing="0" class="form-list">
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="value" style="padding: 5px 0;">
+                            <ul style="list-style-type:none;margin-left:20px;font-weight:bold;font-size:16px;">
+                                <?php foreach($stores as $_website): ?>
+                                <li style="margin-bottom:20px;">
+                                    <?php echo $_website['name']; ?>
+                                    <ul>
+                                    <?php foreach($_website['store_groups'] as $_group): ?>
+                                        <li style="list-style-type:none;margin-left:20px;font-weight:bold;font-size:14px;">
+                                            <?php echo $_group['name']; ?>
+                                            <ul>
+                                                <?php foreach($_group['store_views'] as $_store): ?>
+                                                    <li style="list-style-type:none;margin-left:20px;font-weight:bold;font-size:12px;">
+                                                        <?php echo $_store['name']; ?>
+
+                                                        <?php if($_store['isInstalled']): ?>
+                                                            <span style="color:green">(<?php echo $this->__('Installed') ?>)</span>
+                                                            -
+                                                            <?php if($_store['webTracking']): ?>
+                                                                <span style="color:green"><?php echo $this->__('Website Tracking Enabled') ?></span>
+                                                                - <a href="<?php echo $this->getUrl('*/install/disableWebtracking', array('store' => $_store['id'])) ?>"><?php echo $this->__('Disable Website Tracking'); ?></a>
+                                                            <?php else: ?>
+                                                                <button id="install_webtracking_button_<?php echo $_store['id'] ?>" title="Webtracking" type="button" class="scalable save" onclick="window.location = '<?php echo $this->getUrl('*/install/installWebtracking', array('store' => $_store['id'])) ?>'" style="">
+                                                                    <span><span><span>Enable Website Tracking</span></span></span>
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        <?php else: ?>
+                                                            <button id="install_button_<?php echo $_store['id'] ?>" title="Save Category" type="button" class="scalable save" onclick="window.location = '<?php echo $this->getUrl('*/install/install', array('mode' => Remarkety_Mgconnector_Model_Install::MODE_INSTALL_LOGIN, 'store' => $_store['id'])) ?>'" style="">
+                                                                <span><span><span>Install</span></span></span>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </li>
+                                    <?php endforeach; ?>
+                                    </ul>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+<?php } ?>
