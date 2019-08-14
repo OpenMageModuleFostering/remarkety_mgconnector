@@ -58,6 +58,12 @@ class Remarkety_Mgconnector_Adminhtml_QueueController extends Mage_Adminhtml_Con
 				Mage::getModel('core/config')->saveConfig(\Remarkety_Mgconnector_Model_Webtracking::RM_BYPASS_CACHE, false);
 			}
 
+			if(isset($params['data']['markgroupparent'])){
+				Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/mark_group_parent', true);
+			} else {
+				Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/mark_group_parent', false);
+			}
+
 			Mage::app()->getCacheInstance()->cleanType('config');
     		$this->_getSession()->addSuccess($this->__('Configuration has been saved.'));
     	}

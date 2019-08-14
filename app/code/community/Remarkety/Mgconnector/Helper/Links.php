@@ -13,15 +13,23 @@ class Remarkety_Mgconnector_Helper_Links extends Mage_Core_Helper_Abstract
             return;
         }
 
-        $connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-        $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_super_link');
+        $mark_grouped_parent = Mage::getStoreConfig('remarkety/mgconnector/mark_group_parent');
 
-        $query = 'select product_id,parent_id from ' . $tableName;
+        $connection = Mage::getSingleton('core/resource')->getConnection('core_read');
+        if ($mark_grouped_parent){
+            $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_relation');
+            $childField = "child_id";
+        } else {
+            $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_super_link');
+            $childField = "product_id";
+        }
+
+        $query = 'select '.$childField.',parent_id from ' . $tableName;
         $this->simpleIds = array();
         $this->parentId = array();
 
         foreach ($connection->fetchAll($query) as $row) {
-            $productId = $row['product_id'];
+            $productId = $row[$childField];
             $parentId = $row['parent_id'];
 
             if (!isset($this->simpleIds[$parentId])) {

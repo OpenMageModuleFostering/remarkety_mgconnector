@@ -81,6 +81,17 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Configure_Form extends Mage_Ad
             'style' => 'float:left',
         ));
 
+        $fieldset->addField('markgroupparent', 'checkbox', array(
+            'label' => $this->__('Mark grouped product as parent of associated products'),
+            'name' => 'data[markgroupparent]',
+            'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
+                    'Enable this checkbox only if each simple product has only 1 parent grouped product'
+                ) . '</small>',
+            'value' => 1,
+            'checked' => Mage::getStoreConfig('remarkety/mgconnector/mark_group_parent') ? 'checked' : '',
+            'style' => 'float:left',
+        ));
+
         $button = $fieldset->addField('button', 'note', array(
             'label' => false,
             'name' => 'button',

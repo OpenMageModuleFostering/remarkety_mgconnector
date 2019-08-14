@@ -22,8 +22,6 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     const XPATH_CATEGORIES_TO_IGNORE = 'remarkety/mgconnector/categories-to-ignore';
     private $_categoriesToIgnore = array();
 
-    private $configurable_product_model = null;
-
     private $_productCache = array();
     private $_categoryCache = array();
 
@@ -31,6 +29,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     private $_log = array();
 
     private $_startTime = 0;
+
+    private $_groupedTypes = array('configurable', 'grouped');
 
     private $response_mask = array(
         'customer' => array(
@@ -146,7 +146,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                     'name',
                     'created_at',
                     'updated_at',
-                    'thumbnail',
+                    'base_image',
+                    'thumbnail_image',
                     'small_image',
                     'categories',
                     'type_id',
@@ -161,7 +162,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             'created_at',
             'updated_at',
             'type_id',
-            'thumbnail',
+            'base_image',
+            'thumbnail_image',
             'is_salable',
             'visibility',
             'categories',
@@ -652,8 +654,10 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                         }
 
 //                        $product->setStoreId($mage_store_view_id)->load($product->getId());
-                        $itemData['thumbnail'] = $this->getImageUrl($product, 'image', $mage_store_view_id);
-                        //$itemData['small_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_view_id);
+                        $itemData['base_image'] = $this->getImageUrl($product, 'image', $mage_store_view_id);
+                        $itemData['small_image'] = $this->getImageUrl($product, 'small', $mage_store_view_id);
+                        $itemData['thumbnail_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_view_id);
+
                         $itemData['name'] = $this->getProductName($product, $mage_store_view_id);
 
                         $itemData['type_id'] = $product->getData('type_id');
@@ -870,7 +874,10 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             foreach ($productsCollection as $product) {
 //                $product->setStoreId($mage_store_view_id)->load($product->getId());
                 $productData = $product->toArray();
-                $productData['thumbnail'] = $this->getImageUrl($product, 'image', $mage_store_id);
+
+                $productData['base_image'] = $this->getImageUrl($product, 'image', $mage_store_id); //will bring base image (for backwards compatibility)
+                $productData['small_image'] = $this->getImageUrl($product, 'small', $mage_store_id);
+                $productData['thumbnail_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_id);
 
                 $productData['categories'] = $this->_productCategories($product);
                 $productData['price'] = $product->getFinalPrice();
@@ -1127,7 +1134,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     }
 
     public function getProductParentId($product){
-        if ($product->type_id != 'configurable') {
+        if (!in_array($product->type_id, $this->_groupedTypes)) {
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
 
@@ -1151,7 +1158,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $this->_debug(__FUNCTION__, "Start - prod id ".$product->getId(), null, '');
         $url = '';
         $visibility = $product->getVisibility();
-        if ($product->type_id != 'configurable' || $visibility == 1) {
+        if ($visibility == 1 || !in_array($product->type_id, $this->_groupedTypes)) {
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
 
@@ -1199,7 +1206,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     public function getImageUrl($product, $type = 'image', $mage_store_view_id)
     {
         $url = '';
-        if ($product->type_id != 'configurable') {
+        if (!in_array($product->type_id, $this->_groupedTypes)) {
             $this->_debug(__FUNCTION__, null, "not config prod id" . $product->getId(), '');
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
@@ -1220,8 +1227,19 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->_debug(__FUNCTION__, null, "configurable prod id" . $product->getId(), '');
         }
         $this->_debug(__FUNCTION__, null, "Getting image url for product: " . $product->getId(), '');
-        $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . 'catalog/product' . $product->getImage();
-//        $url = (string)Mage::helper('catalog/image')->init($product, $type);
+
+        switch($type){
+            case "small":
+                $imagePath = $product->getSmallImage();
+                break;
+            case "thumbnail":
+                $imagePath = $product->getThumbnail();
+                break;
+            default:
+                $imagePath = $product->getImage();
+        }
+
+        $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . 'catalog/product' . $imagePath;
         $this->_debug(__FUNCTION__, null, $type . " url: " . $url, '');
         return $url;
 
@@ -1236,7 +1254,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     private function getProductName($product, $mage_store_view_id){
         $name = '';
-        if($product->type_id != 'configurable') {
+        if(!in_array($product->type_id, $this->_groupedTypes)) {
             $this->_debug(__FUNCTION__, null, "not config prod id ".$product->getId(), '');
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
@@ -1297,14 +1315,6 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
             return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
         }
-    }
-
-    private function getConfigProdModel()
-    {
-        if ($this->configurable_product_model == null) {
-            $this->configurable_product_model = Mage::getModel('catalog/product_type_configurable');
-        }
-        return $this->configurable_product_model;
     }
 
     private function loadProduct($productId) {

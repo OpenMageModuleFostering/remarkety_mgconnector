@@ -1,3 +1,8 @@
+1.4.4.0
+-------
+- Optionally attach child products to parent grouped product
+- Send Remarkety 3 types of images (small, base and thumbnail)
+
 1.4.3.0
 -------
 - Bypass store cache for website tracking
