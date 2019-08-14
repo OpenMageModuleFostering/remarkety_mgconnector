@@ -82,6 +82,12 @@ class Remarkety_Mgconnector_Model_Resource_Rule_Collection  extends Mage_SalesRu
             } else {
                 $this->addFieldToFilter('main_table.coupon_type', Mage_SalesRule_Model_Rule::COUPON_TYPE_NO_COUPON);
             }
+
+            $select->where('
+                         (main_table.to_date IS NULL) OR
+                         (main_table.to_date >= ?)
+                       ', $now);
+
             $this->setOrder('sort_order', self::SORT_ORDER_ASC);
             $this->setFlag('validation_filter', true);
         }

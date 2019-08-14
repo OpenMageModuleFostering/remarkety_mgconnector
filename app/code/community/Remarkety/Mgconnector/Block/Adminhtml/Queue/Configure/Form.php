@@ -58,7 +58,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Configure_Form extends Mage_Ad
         $fieldset->addField('intervals', 'text', array(
             'label' => $this->__('Intervals:'),
             'name' => 'data[intervals]',
-            'required' => true,
+            'required' => false,
             'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
                     'This defines the queue retry interval.<br/>
             		Type the amount of minutes between retries, separated by commas. For example "1,3,10" -
@@ -89,6 +89,17 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Configure_Form extends Mage_Ad
                 ) . '</small>',
             'value' => 1,
             'checked' => Mage::getStoreConfig('remarkety/mgconnector/mark_group_parent') ? 'checked' : '',
+            'style' => 'float:left',
+        ));
+
+        $fieldset->addField('simpleproductstandalone', 'checkbox', array(
+            'label' => $this->__('Get images and urls independently for simple products'),
+            'name' => 'data[simpleproductstandalone]',
+            'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
+                    'Enable this checkbox if simple products that are related to configurable products have their own images and urls'
+                ) . '</small>',
+            'value' => 1,
+            'checked' => Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone') ? 'checked' : '',
             'style' => 'float:left',
         ));
 

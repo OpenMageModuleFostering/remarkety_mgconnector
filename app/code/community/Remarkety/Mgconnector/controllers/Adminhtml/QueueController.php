@@ -64,6 +64,12 @@ class Remarkety_Mgconnector_Adminhtml_QueueController extends Mage_Adminhtml_Con
 				Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/mark_group_parent', false);
 			}
 
+		    if(isset($params['data']['simpleproductstandalone'])){
+			    Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/configurable_standalone', true);
+		    } else {
+			    Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/configurable_standalone', false);
+		    }
+
 			Mage::app()->getCacheInstance()->cleanType('config');
     		$this->_getSession()->addSuccess($this->__('Configuration has been saved.'));
     	}

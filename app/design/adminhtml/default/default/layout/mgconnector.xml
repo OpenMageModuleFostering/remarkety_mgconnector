@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Adminhtml layout update.
+ *
+ * @category Remarkety
+ * @package  Remarkety_Mgconnector
+ * @author   Piotr Pierzak <piotrek.pierzak@gmail.com>
+ */
+-->
+<layout version="0.1.0">
+    <adminhtml_extension_rewardpoints_index>
+        <reference name="content">
+            <block type="mgconnector/adminhtml_extension_rewardPoints"
+                   name="remarkety.extension.rewardpoints"
+                   template="mgconnector/extension/rewardpoints.phtml"/>
+        </reference>
+    </adminhtml_extension_rewardpoints_index>
+</layout>

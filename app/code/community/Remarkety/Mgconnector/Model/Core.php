@@ -31,6 +31,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     private $_startTime = 0;
 
     private $_groupedTypes = array('configurable', 'grouped');
+    private $simpleProductsStandalone = false;
 
     private $response_mask = array(
         'customer' => array(
@@ -416,6 +417,13 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 ->addOrder('updated_at', 'ASC')
                 ->addAttributeToSelect('*');
 
+            $extensionHelper = Mage::helper('mgconnector/extension');
+            $rewardPointsInstance = $extensionHelper
+                ->getRewardPointsIntegrationInstance();
+            if ($rewardPointsInstance !== false) {
+                //add reward points join
+                $rewardPointsInstance->modifyCustomersCollection($customersCollection);
+            }
 
             // $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
 
@@ -822,7 +830,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $pageSize = null;
         $ret = array();
         $myArgs = func_get_args();
-
+        $this->simpleProductsStandalone = Mage::helper('mgconnector/configuration')->getValue('configurable_standalone', false);
         try {
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
             $productCollectionWithPrices = Mage::getModel("catalog/product")
@@ -1211,17 +1219,17 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $url = '';
         $visibility = $product->getVisibility();
         if ($visibility == 1 || !in_array($product->type_id, $this->_groupedTypes)) {
-            $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
-
-            if($arrayOfParentIds && count($arrayOfParentIds)) {
-                if(is_array($arrayOfParentIds)) {
-                    $parentId = $arrayOfParentIds[0];
-                } else {
-                    $parentId = $arrayOfParentIds;
+            if (!$this->simpleProductsStandalone) {
+                $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
+                if ($arrayOfParentIds && count($arrayOfParentIds)) {
+                    if (is_array($arrayOfParentIds)) {
+                        $parentId = $arrayOfParentIds[0];
+                    } else {
+                        $parentId = $arrayOfParentIds;
+                    }
                 }
             }
-
             if (!is_null($parentId)) {
                 $this->_debug(__FUNCTION__, "parent id ".$parentId, null, '');
                 $product_id = $parentId;
@@ -1257,8 +1265,9 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     public function getImageUrl($product, $type = 'image', $mage_store_view_id)
     {
+
         $url = '';
-        if (!in_array($product->type_id, $this->_groupedTypes)) {
+        if (!$this->simpleProductsStandalone && !in_array($product->type_id, $this->_groupedTypes)) {
             $this->_debug(__FUNCTION__, null, "not config prod id" . $product->getId(), '');
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
@@ -1306,7 +1315,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     private function getProductName($product, $mage_store_view_id){
         $name = '';
-        if(!in_array($product->type_id, $this->_groupedTypes)) {
+        if(!$this->simpleProductsStandalone && !in_array($product->type_id, $this->_groupedTypes)) {
             $this->_debug(__FUNCTION__, null, "not config prod id ".$product->getId(), '');
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
@@ -1445,6 +1454,12 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     public function sendLogInResponse() {
         $this->_sendLogInResponse = true;
+    }
+
+    private function _setupConfiguration() {
+        $keys = array('categories-to-ignore', 'configurable_standalone');
+
+        $this->simpleProductsStandalone = Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone');
     }
 }
 

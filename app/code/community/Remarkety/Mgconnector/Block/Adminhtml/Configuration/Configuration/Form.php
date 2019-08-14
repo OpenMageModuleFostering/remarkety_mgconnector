@@ -40,7 +40,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Configuration_Configuration_Form ext
         $fieldset->addField('intervals', 'text', array(
             'label' => $this->__('Intervals:'),
             'name' => 'data[intervals]',
-            'required' => true,
+            'required' => false,
             'after_element_html' => '<small style="float:left;width:100%;">' . $this->__(
                     'Here you have to type amount of minutes separated by commas.For example "1,3,10" -
                     it means that second attempt will be after 1 minute, third after 3 minutes,

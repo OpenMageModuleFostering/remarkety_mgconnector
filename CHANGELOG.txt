@@ -1,3 +1,20 @@
+1.4.7.3
+-------
+Bugfix - get configuration settings from the request parameter instead of the headers
+
+1.4.7.2
+-------
+Override configuration items from headers
+
+1.4.7.1
+-------
+Add configuration option to get url's and images for simple products regardless of parent product
+
+1.4.7.0
+-------
+Integrate with Magestore Reward Points extension
+Bugfix for coupons date
+
 1.4.6.1
 -------
 - bugfix - Send products which have become disabled
