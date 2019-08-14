@@ -23,7 +23,8 @@ class Remarkety_Mgconnector_WebtrackingController extends Mage_Core_Controller_F
 
     private function getEmail(){
         if(Mage::getSingleton('customer/session')->isLoggedIn()){
-            return $this->getCustomer()->getEmail();
+            $customer = Mage::getSingleton('customer/session')->getCustomer();
+            return $customer->getEmail();
         }
         $email = Mage::getSingleton('customer/session')->getSubscriberEmail();
         return empty($email) ? false : $email;

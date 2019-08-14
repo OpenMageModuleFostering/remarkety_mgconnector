@@ -173,6 +173,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             'cost',
             'url_path',
             'is_in_stock',
+            'inventory',
             'parent_id'
         )
     );
@@ -824,7 +825,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
         try {
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
-            $productsCollection = Mage::getModel("catalog/product")
+            $productCollectionWithPrices = Mage::getModel("catalog/product")
                 ->getCollection()
                 ->setStoreId($mage_store_id)
                 ->applyFrontendPriceLimitations()
@@ -834,28 +835,42 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 //	            ->addUrlRewrite()
                 ->addAttributeToSelect('*');
 
+            $productCollectionWithoutPrices = Mage::getModel("catalog/product")
+                ->getCollection()
+                ->setStoreId($mage_store_id)
+//                ->applyFrontendPriceLimitations()
+                ->addOrder('updated_at', 'ASC')
+                ->addCategoryIds()
+//	            ->addUrlRewrite()
+                ->addAttributeToSelect('*');
             if ($updated_at_min != null) {
-                $productsCollection->addAttributeToFilter('updated_at', array('gt' => $updated_at_min));
+                $productCollectionWithPrices->addAttributeToFilter('updated_at', array('gt' => $updated_at_min));
+                $productCollectionWithoutPrices->addAttributeToFilter('updated_at', array('gt' => $updated_at_min));
             }
 
             if ($updated_at_max != null) {
-                $productsCollection->addAttributeToFilter('updated_at', array('lt' => $updated_at_max));
+                $productCollectionWithPrices->addAttributeToFilter('updated_at', array('lt' => $updated_at_max));
+                $productCollectionWithoutPrices->addAttributeToFilter('updated_at', array('lt' => $updated_at_max));
             }
 
             if ($since_id != null) {
-                $productsCollection->addAttributeToFilter('entity_id', array('gt' => $since_id));
+                $productCollectionWithPrices->addAttributeToFilter('entity_id', array('gt' => $since_id));
+                $productCollectionWithoutPrices->addAttributeToFilter('entity_id', array('gt' => $since_id));
             }
 
             if ($created_at_min != null) {
-                $productsCollection->addAttributeToFilter('created_at', array('gt' => $created_at_min));
+                $productCollectionWithPrices->addAttributeToFilter('created_at', array('gt' => $created_at_min));
+                $productCollectionWithoutPrices->addAttributeToFilter('created_at', array('gt' => $created_at_min));
             }
 
             if ($created_at_max != null) {
-                $productsCollection->addAttributeToFilter('created_at', array('lt' => $created_at_max));
+                $productCollectionWithPrices->addAttributeToFilter('created_at', array('lt' => $created_at_max));
+                $productCollectionWithoutPrices->addAttributeToFilter('created_at', array('lt' => $created_at_max));
             }
 
             if ($product_id != null) {
-                $productsCollection->addAttributeToFilter('entity_id', $product_id);
+                $productCollectionWithPrices->addAttributeToFilter('entity_id', $product_id);
+                $productCollectionWithoutPrices->addAttributeToFilter('entity_id', $product_id);
             }
 
             if ($limit != null) {
@@ -869,20 +884,47 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 }
             }
 
-            if (!is_null($pageSize)) $productsCollection->setPage($pageNumber, $pageSize);
+            if (!is_null($pageSize)) {
+                $productCollectionWithPrices->setPage($pageNumber, $pageSize);
+                $productCollectionWithoutPrices->setPage($pageNumber, $pageSize);
+            }
 
             $storeUrl = Mage::app()->getStore($mage_store_id)->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB, true);
 
             $productIds = array();
-            foreach ($productsCollection as $product) {
-                $productIds[] = $product->getId();
+            $products = array();
+            foreach ($productCollectionWithPrices as $product) {
+                $productId = $product->getId();
+                if (!in_array($productId, $productIds)) {
+                    $productIds[] = $productId;
+                    $products[] = $product;
+                }
             }
+
+            foreach ($productCollectionWithoutPrices as $product) {
+                $productId = $product->getId();
+                if (!in_array($productId, $productIds)) {
+                    $productIds[] = $productId;
+                    $products[] = $product;
+                }
+            }
+
             $this->loadProducts($mage_store_id, $productIds);
 
-            foreach ($productsCollection as $product) {
+            $stockItemCollection = Mage::getModel('cataloginventory/stock_item')
+                ->getCollection()
+                ->addProductsFilter($productIds);
+            $inventories = array();
+            foreach ($stockItemCollection as $stockItem) {
+                $productId = $stockItem->getProductId();
+                $qty = $stockItem->getQty();
+                $inventories[$productId] = $qty;
+            }
+
+            foreach ($products as $product) {
 //                $product->setStoreId($mage_store_view_id)->load($product->getId());
                 $productData = $product->toArray();
-
+                $productId = $product->getId();
                 $productData['base_image'] = $this->getImageUrl($product, 'image', $mage_store_id); //will bring base image (for backwards compatibility)
                 $productData['small_image'] = $this->getImageUrl($product, 'small', $mage_store_id);
                 $productData['thumbnail_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_id);
@@ -895,6 +937,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 $productData['name'] = $this->getProductName($product, $mage_store_id);
                 $productData['is_salable'] = $product->isSalable();
                 $productData['visibility'] = $product->getVisibility();
+                if (key_exists($productId, $inventories))
+                    $productData['inventory'] = $inventories[$productId];
 
                 /*
                 VISIBILITY_BOTH = 4

@@ -1,3 +1,12 @@
+1.4.6.1
+-------
+- bugfix - Send products which have become disabled
+- Efficiently query and send inventory information
+
+1.4.6.0
+-------
+- bugfix - customer email address on webtracking bypass cache
+
 1.4.5.0
 -------
 - bugfix in install model

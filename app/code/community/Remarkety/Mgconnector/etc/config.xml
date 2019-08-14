@@ -1,7 +1,7 @@
 <config>
     <modules>
         <Remarkety_Mgconnector>
-            <version>1.4.5.0</version>
+            <version>1.4.6.1</version>
         </Remarkety_Mgconnector>
     </modules>
     <global>
