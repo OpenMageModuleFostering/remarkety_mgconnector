@@ -14,12 +14,23 @@ class Remarkety_Mgconnector_Model_Core_Api
         $limit = null,
         $page = null,
         $since_id = null,
-		$returnLog = 0)
-    {
+        $returnLog = 0
+) 
+    { 
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
 
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
 
         return $myModel->getCustomers(
             $mage_store_group_id,
@@ -27,7 +38,8 @@ class Remarkety_Mgconnector_Model_Core_Api
             $updated_at_max,
             $limit,
             $page,
-            $since_id);
+            $since_id
+        );
     }
 
     public function getOrders(
@@ -39,14 +51,26 @@ class Remarkety_Mgconnector_Model_Core_Api
         $since_id = null,
         $created_at_min = null,
         $created_at_max = null,
-        $order_status = null,        // Not implemented
+        $order_status = null,
+        // Not implemented
         $order_id = null,
-        $returnLog = 0)
-    {
+        $returnLog = 0
+) 
+    { 
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
 
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
 
         return $myModel->getOrders(
             $mage_store_group_id,
@@ -58,7 +82,8 @@ class Remarkety_Mgconnector_Model_Core_Api
             $created_at_min,
             $created_at_max,
             $order_status,        // Not implemented
-            $order_id);
+            $order_id
+        );
     }
 
     public function getQuotes(
@@ -68,12 +93,23 @@ class Remarkety_Mgconnector_Model_Core_Api
         $limit = null,
         $page = null,
         $since_id = null,
-        $returnLog = 0)
-    {
+        $returnLog = 0
+) 
+    { 
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
 
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
 
         return $myModel->getQuotes(
             $mage_store_group_id,
@@ -81,7 +117,8 @@ class Remarkety_Mgconnector_Model_Core_Api
             $updated_at_max,
             $limit,
             $page,
-            $since_id);
+            $since_id
+        );
     }
 
     public function getProducts(
@@ -90,21 +127,37 @@ class Remarkety_Mgconnector_Model_Core_Api
         $updated_at_max = null,
         $limit = null,
         $page = null,
-        $handle = null,                // Not implemented
-        $vendor = null,                // Not implemented
-        $product_type = null,        // Not implemented
-        $collection_id = null,        // Not implemented
+        $handle = null,
+        // Not implemented
+        $vendor = null,
+        // Not implemented
+        $product_type = null,
+        // Not implemented
+        $collection_id = null,
+        // Not implemented
         $since_id = null,
         $created_at_min = null,
         $created_at_max = null,
-        $published_status = null,    // Not implemented
+        $published_status = null,
+        // Not implemented
         $product_id = null,
-		$returnLog = 0)
-    {
+        $returnLog = 0
+) 
+    { 
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
 
         $myModel = Mage::getModel("mgconnector/core");
-		if ($returnLog)
-			$myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         return $myModel->getProducts(
             $mage_store_view_id,
             $updated_at_min,
@@ -120,57 +173,71 @@ class Remarkety_Mgconnector_Model_Core_Api
             $created_at_max,
             $published_status,
             $product_id,
-            $returnLog);
+            $returnLog
+        );
     }
 
-    public function getSubscribers($mage_store_view_id = null,
+    public function getSubscribers(
+        $mage_store_view_id = null,
         $limit = null,
         $page = null,
-    	$sinceId = null,
-	    $returnLog = 0)
-    {
+        $sinceId = null,
+        $returnLog = 0
+) 
+    { 
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
 
         return $myModel->getSubscribers(
             $mage_store_view_id,
             $limit,
             $page,
-        	$sinceId);
+            $sinceId
+        );
     }
     
     public function getSubscriberCount($mage_store_view_id = null, $returnLog = 0)
     {
     
-    	$myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        $myModel = Mage::getModel("mgconnector/core");
+        if ($returnLog)
+            $myModel->sendLogInResponse();
     
-    	return $myModel->getSubscriberCount($mage_store_view_id);
+        return $myModel->getSubscriberCount($mage_store_view_id);
     }
     
     public function getStoreSettings($mage_store_view_id = null, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         return $myModel->getStoreSettings($mage_store_view_id);
     }
 
     public function getStoreOrderStatuses($mage_store_view_id, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         return $myModel->getStoreOrderStatuses($mage_store_view_id);
     }
 
     public function createCoupon($rule_id, $coupon_code, $expiration, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         $ret = $myModel->createCoupon($rule_id, $coupon_code, $expiration);
         return $ret;
     }
@@ -178,8 +245,8 @@ class Remarkety_Mgconnector_Model_Core_Api
     public function unsubscribe($email, $returnLog = 0)
     {
         $myModel = Mage::getModel('mgconnector/core');
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         $ret = $myModel->unsubscribe($email);
         return $ret;
     }
@@ -187,24 +254,24 @@ class Remarkety_Mgconnector_Model_Core_Api
     public function getCustomersCount($mage_store_group_id, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         return $myModel->getCustomersCount($mage_store_group_id);
     }
 
     public function getOrdersCount($mage_store_group_id, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         return $myModel->getOrdersCount($mage_store_group_id);
     }
 
     public function getProductsCount($mage_view_id, $returnLog = 0)
     {
         $myModel = Mage::getModel("mgconnector/core");
-	    if ($returnLog)
-		    $myModel->sendLogInResponse();
+        if ($returnLog)
+            $myModel->sendLogInResponse();
         $ret = $myModel->getProductsCount($mage_view_id);
         return $ret;
     }

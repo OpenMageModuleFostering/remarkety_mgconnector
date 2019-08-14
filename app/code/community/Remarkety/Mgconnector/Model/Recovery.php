@@ -61,7 +61,8 @@ class Remarkety_Mgconnector_Model_Recovery
      * @param $id
      * @return string
      */
-    public function encodeQuoteId($id){
+    public function encodeQuoteId($id)
+    {
         $sign = md5($id . '.' . $this->_apikey);
         return base64_encode($id . ':' . $sign);
     }
@@ -71,7 +72,8 @@ class Remarkety_Mgconnector_Model_Recovery
      * @param $hashed_id
      * @return bool|int
      */
-    public function decodeQuoteId($hashed_id){
+    public function decodeQuoteId($hashed_id)
+    {
         $id = null;
         $parts = base64_decode($hashed_id);
         if(!empty($parts)){
@@ -87,6 +89,7 @@ class Remarkety_Mgconnector_Model_Recovery
                 }
             }
         }
+
         return false;
     }
 }

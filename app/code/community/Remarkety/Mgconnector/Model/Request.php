@@ -47,16 +47,19 @@ class Remarkety_Mgconnector_Model_Request
         return $arr;
     }
 
-    public function getStoreID($magento_store_id){
+    public function getStoreID($magento_store_id)
+    {
         try {
             $store = Mage::getModel('core/store')->load($magento_store_id);
             $payload = $this->_getPayloadBase();
 
-            $payload['selectedView'] = json_encode(array(
+            $payload['selectedView'] = json_encode(
+                array(
                 'website_id' => $store->getWebsiteId(),
                 'store_id' => $store->getGroupId(),
                 'view_id' => $magento_store_id,
-            ));
+                )
+            );
             $payload['key'] = Mage::getStoreConfig('remarkety/mgconnector/api_key');
 
             $client = new Zend_Http_Client(
@@ -78,9 +81,11 @@ class Remarkety_Mgconnector_Model_Request
                 if(!empty($body['storePublicId'])){
                     return $body['storePublicId'];
                 }
+
                 //if no store id
                 throw new Exception('Response from Remarkety without storeId');
             }
+
             switch ($response->getStatus()) {
                 case '200':
                     return $body;

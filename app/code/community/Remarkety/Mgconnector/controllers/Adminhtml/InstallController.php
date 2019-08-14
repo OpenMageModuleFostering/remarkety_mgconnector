@@ -9,6 +9,18 @@
  */
 class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_Controller_Action
 {
+
+    /**
+     * Is allowed action
+     *
+     * @return bool
+     */
+
+    protected function _isAllowed() 
+    {
+        return true;
+    }
+
     /**
      * Init action
      *
@@ -63,9 +75,9 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
     public function installAction()
     {
         $mode = Mage::helper('mgconnector')->getMode();
-		$this
-			->_initAction()
-			->_title($this->__($this->_getTitle($mode)));
+        $this
+            ->_initAction()
+            ->_title($this->__($this->_getTitle($mode)));
 
         $this
             ->_addContent($this->getLayout()->createBlock(sprintf('mgconnector/adminhtml_install_%s', $mode)))
@@ -82,6 +94,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         if(!is_numeric($store_id) || is_null($store_id)){
             throw new Exception("Missing store id");
         }
+
         /**
          * @var $m Remarkety_Mgconnector_Model_Webtracking
          */
@@ -97,6 +110,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
             Mage::app()->getCacheInstance()->cleanType('config');
             Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
         }
+
         $this->_redirect('*/install/install', array('mode' => 'welcome'));
     }
 
@@ -109,6 +123,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         if(!is_numeric($store_id) || is_null($store_id)){
             throw new Exception("Missing store id");
         }
+
         /**
          * @var $m Remarkety_Mgconnector_Model_Webtracking
          */
@@ -138,7 +153,8 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
      * @param   string $mode
      * @return  string
      */
-    protected function _getTitle($mode) {
+    protected function _getTitle($mode) 
+    {
         return ucwords(str_replace('_', ' - ', $mode));
     }
 

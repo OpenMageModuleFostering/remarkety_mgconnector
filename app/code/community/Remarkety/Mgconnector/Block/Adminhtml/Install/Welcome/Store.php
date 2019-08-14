@@ -48,7 +48,8 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
         return $stores;
     }
 
-    public function checkAPIKey(){
+    public function checkAPIKey()
+    {
         try {
             $uModel = Mage::getModel('api/user');
             $apiKey = Mage::getStoreConfig('remarkety/mgconnector/api_key');

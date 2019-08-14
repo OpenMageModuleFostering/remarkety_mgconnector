@@ -47,39 +47,51 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid extends Mage_Adminhtml_Bl
     {
         $helper = Mage::helper('mgconnector');
 
-        $this->addColumn('queue_id', array(
+        $this->addColumn(
+            'queue_id', array(
             'header' => $helper->__('Queue #'),
             'width' => '50px',
             'type' => 'number',
             'index' => 'queue_id'
-        ));
-        $this->addColumn('event_type', array(
+            )
+        );
+        $this->addColumn(
+            'event_type', array(
             'header' => $helper->__('Event Type'),
             'index' => 'event_type',
             'renderer' => 'Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid_Column_Renderer_EventType',
-        ));
-        $this->addColumn('status', array(
+            )
+        );
+        $this->addColumn(
+            'status', array(
             'header' => $helper->__('Status'),
             'width' => '200px',
             'renderer' => 'Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid_Column_Renderer_Status',
             'index' => 'status'
-        ));
-        $this->addColumn('attempts', array(
+            )
+        );
+        $this->addColumn(
+            'attempts', array(
             'header' => $helper->__('Attempts'),
             'index' => 'attempts'
-        ));
-        $this->addColumn('last_attempt', array(
+            )
+        );
+        $this->addColumn(
+            'last_attempt', array(
             'header' => $helper->__('Last Attempt'),
             'width' => '200px',
             'type' => 'datetime',
             'index' => 'last_attempt'
-        ));
-        $this->addColumn('next_attempt', array(
+            )
+        );
+        $this->addColumn(
+            'next_attempt', array(
             'header' => $helper->__('Next Attempt'),
             'width' => '200px',
             'type' => 'datetime',
             'index' => 'next_attempt'
-        ));
+            )
+        );
 
         return parent::_prepareColumns();
     }
@@ -97,20 +109,24 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid extends Mage_Adminhtml_Bl
 
     protected function _prepareMassaction()
     {
-    	$this->setMassactionIdField('queue_id');
-    	$this->getMassactionBlock()->setFormFieldName('queue');
+        $this->setMassactionIdField('queue_id');
+        $this->getMassactionBlock()->setFormFieldName('queue');
     
-    	$this->getMassactionBlock()->addItem('resend', array(
-    			'label'        => $this->__('Resend'),
-    			'url'          => $this->getUrl('*/*/massResend')
-    	));
+        $this->getMassactionBlock()->addItem(
+            'resend', array(
+                'label'        => $this->__('Resend'),
+                'url'          => $this->getUrl('*/*/massResend')
+            )
+        );
     
-    	$this->getMassactionBlock()->addItem('delete', array(
-    			'label'        => $this->__('Delete'),
-    			'url'          => $this->getUrl('*/*/massDelete'),
-    			'confirm'		=> $this->__('Really delete all these events?')
-    	));
+        $this->getMassactionBlock()->addItem(
+            'delete', array(
+                'label'        => $this->__('Delete'),
+                'url'          => $this->getUrl('*/*/massDelete'),
+                'confirm'        => $this->__('Really delete all these events?')
+            )
+        );
     
-    	return $this;
+        return $this;
     }
 }

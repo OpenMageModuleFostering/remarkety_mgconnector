@@ -10,7 +10,8 @@
 $installer = $this;
 $installer->startSetup();
 
-$installer->run("
+$installer->run(
+    "
 CREATE TABLE IF NOT EXISTS `{$installer->getTable('mgconnector/queue')}` (
   `queue_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Remarkety queue ID',
   `event_type` varchar(20) NOT NULL COMMENT 'Event_type',
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `{$installer->getTable('mgconnector/queue')}` (
   `status` smallint(6) NOT NULL DEFAULT '1' COMMENT 'Status',
   PRIMARY KEY (`queue_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Remarkety queue table';
-");
+"
+);
 
 $installer->endSetup();

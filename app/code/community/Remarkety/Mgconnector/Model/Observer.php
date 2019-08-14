@@ -396,7 +396,8 @@ class Remarkety_Mgconnector_Model_Observer
     protected function _getHeaders($eventType, $payload)
     {
         $domain = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
-        $domain = substr($domain, 7, -1);
+        $url = parse_url($domain);
+        $domain = isset($url['host']) ? $url['host'] : $domain;
 
         $headers = array(
             'X-Domain: ' . $domain,
@@ -735,7 +736,7 @@ class Remarkety_Mgconnector_Model_Observer
                 'main_table.rule_id = catalogrule_product.rule_id',
                 array('product_id')
             )
-            ->group(['main_table.rule_id', 'catalogrule_product.product_id']);
+            ->group(array('main_table.rule_id', 'catalogrule_product.product_id'));
 
         if(is_null($ruleId)){
             $collection->getSelect()

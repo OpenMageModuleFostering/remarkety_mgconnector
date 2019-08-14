@@ -122,7 +122,8 @@ class Remarkety_Mgconnector_Model_Install
                 ->saveRel();
 
             $user = Mage::getModel('api/user')
-                ->setData(array(
+                ->setData(
+                    array(
                     'username' => self::WEB_SERVICE_ROLE,
                     'firstname' => $wsFirstName,
                     'lastname' => $wsLastName,
@@ -134,7 +135,8 @@ class Remarkety_Mgconnector_Model_Install
                     'assigned_user_role' => '',
                     'role_name' => '',
                     'roles' => array($role->getId())
-                ));
+                    )
+                );
 
             $retries = 0;
             $maxRetries = 5;
@@ -142,9 +144,11 @@ class Remarkety_Mgconnector_Model_Install
                 $email = "_$email";
                 $user->setData("email", $email);
             }
+
             if ($retries == $maxRetries) {
                 throw new Exception("Could not create WebService user - all emails are taken");
             }
+
             $user->save();
 
             $user
@@ -206,16 +210,19 @@ class Remarkety_Mgconnector_Model_Install
         // Create request for each store view separately
         foreach($this->_data['store_id'] as $_storeId) {
             $store = Mage::getModel('core/store')->load($_storeId);
-            $this->_sendRequest(array(
+            $this->_sendRequest(
+                array(
                 'key' => $this->_data['key'],
                 'email' => $this->_data['email'],
                 'password' => $this->_data['password'],
                 'acceptTerms' => $this->_data['terms'],
-                'selectedView' => json_encode(array(
+                'selectedView' => json_encode(
+                    array(
                     'website_id' => $store->getWebsiteId(),
                     'store_id' => $store->getGroupId(),
                     'view_id' => $_storeId,
-                )),
+                    )
+                ),
                 'isNewUser' => true,
                 'firstName' => $this->_data['first_name'],
                 'lastName' => $this->_data['last_name'],
@@ -223,7 +230,8 @@ class Remarkety_Mgconnector_Model_Install
                 'storeFrontUrl' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
                 'viewName' => $store->name,
                 'ip'    => Mage::helper('core/http')->getRemoteAddr()
-            ));
+                )
+            );
 
             $this->_markInstalled($_storeId);
         }
@@ -265,21 +273,25 @@ class Remarkety_Mgconnector_Model_Install
         foreach($this->_data['store_id'] as $_storeId) {
             $store = Mage::getModel('core/store')->load($_storeId);
 
-            $this->_sendRequest(array(
+            $this->_sendRequest(
+                array(
                 'key' => $this->_data['key'],
                 'email' => $this->_data['email'],
                 'password' => $this->_data['password'],
                 'acceptTerms' => $this->_data['terms'],
-                'selectedView' => json_encode(array(
+                'selectedView' => json_encode(
+                    array(
                     'website_id' => $store->getWebsiteId(),
                     'store_id' => $store->getGroupId(),
                     'view_id' => $_storeId,
-                )),
+                    )
+                ),
                 'isNewUser' => false,
                 'storeFrontUrl' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
                 'viewName' => $store->name,
                 'ip'    => Mage::helper('core/http')->getRemoteAddr()
-            ));
+                )
+            );
 
             $this->_markInstalled($_storeId);
         }
@@ -362,12 +374,15 @@ class Remarkety_Mgconnector_Model_Install
             if(file_exists($file = $etcDir . DS . 'system.xml')) {
                 unlink($file);
             }
+
             if(file_exists($file = $blockDir . DS . 'Adminhtml' . DS . 'Mgconnector.php')) {
                 unlink($file);
             }
+
             if(file_exists($file = $blockDir . DS . 'Adminhtml' . DS . 'Mgconnector' . DS . 'Grid.php')) {
                 unlink($file);
             }
+
             if(file_exists($file = $blockDir . DS . 'Adminhtml' . DS . 'Mgconnector' . DS . 'Grid' . DS . 'Column' . DS . 'Renderer' . DS . 'Status.php')) {
                 unlink($file);
             }
@@ -395,6 +410,7 @@ class Remarkety_Mgconnector_Model_Install
         if(!empty($this->_data['email'])) {
             return md5($this->_data['email'] . time());
         }
+
         throw new Mage_Core_Exception('Can not generate api key');
     }
 
@@ -417,7 +433,8 @@ class Remarkety_Mgconnector_Model_Install
      * @param   string $email
      * @return  Mage_Api_Model_User
      */
-    protected function _getWebServiceUserByEmail($email) {
+    protected function _getWebServiceUserByEmail($email) 
+    {
         $webServiceUser = Mage::getModel('api/user')
             ->loadByEmail($email);
 
@@ -431,7 +448,8 @@ class Remarkety_Mgconnector_Model_Install
      * @throws  Mage_Core_Exception
      * @return  Remarkety_Mgconnector_Model_Install
      */
-    protected function _markInstalled($storeId) {
+    protected function _markInstalled($storeId) 
+    {
         $connection = Mage::getSingleton('core/resource')->getConnection('core_write');
 
         try {
@@ -480,7 +498,8 @@ class Remarkety_Mgconnector_Model_Install
         return $collection;
     }
 
-    public static function isMultipleStores() {
+    public static function isMultipleStores() 
+    {
         return 'true' === 'true';
     }
 }

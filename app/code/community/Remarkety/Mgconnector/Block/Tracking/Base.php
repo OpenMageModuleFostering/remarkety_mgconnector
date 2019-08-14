@@ -16,7 +16,8 @@ class Remarkety_Mgconnector_Block_Tracking_Base extends Mage_Core_Block_Template
         return $m->getRemarketyPublicId($store);
     }
 
-    public function shouldBypassCache(){
+    public function shouldBypassCache()
+    {
         return \Remarkety_Mgconnector_Model_Webtracking::getBypassCache();
     }
 
@@ -25,11 +26,19 @@ class Remarkety_Mgconnector_Block_Tracking_Base extends Mage_Core_Block_Template
         return Mage::getSingleton('customer/session')->getCustomer();
     }
 
-    public function getEmail(){
+    public function getEmail()
+    {
         if(Mage::getSingleton('customer/session')->isLoggedIn()){
             return $this->getCustomer()->getEmail();
         }
+
         $email = Mage::getSingleton('customer/session')->getSubscriberEmail();
         return empty($email) ? false : $email;
+    }
+
+    public function getStoreBaseUrl(){
+        $url = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK);
+        $url = preg_replace('/^http(s?)\:\/\//i', '//', $url);
+        return $url;
     }
 }

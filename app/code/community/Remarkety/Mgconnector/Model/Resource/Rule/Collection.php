@@ -26,7 +26,6 @@ class Remarkety_Mgconnector_Model_Resource_Rule_Collection  extends Mage_SalesRu
     public function setValidationFilter($websiteId, $customerGroupId, $couponCode = '', $now = null)
     {
         if (!$this->getFlag('validation_filter')) {
-
             if (is_null($now)) {
                 $now = Mage::getModel('core/date')->date('Y-m-d');
             }
@@ -74,19 +73,23 @@ class Remarkety_Mgconnector_Model_Resource_Rule_Collection  extends Mage_SalesRu
                     $noCouponCondition . ' OR ((' . $orWhereCondition . ') AND rule_coupons.code = ?)', $couponCode
                 );
 
-                $select->where('(rule_coupons.expiration_date IS NULL) AND
+                $select->where(
+                    '(rule_coupons.expiration_date IS NULL) AND
                          (to_date is null or to_date >= ?)
                         OR
                          (rule_coupons.expiration_date IS NOT NULL) AND
-                         (rule_coupons.expiration_date >= ?) ', $now);
+                         (rule_coupons.expiration_date >= ?) ', $now
+                );
             } else {
                 $this->addFieldToFilter('main_table.coupon_type', Mage_SalesRule_Model_Rule::COUPON_TYPE_NO_COUPON);
             }
 
-            $select->where('
+            $select->where(
+                '
                          (main_table.to_date IS NULL) OR
                          (main_table.to_date >= ?)
-                       ', $now);
+                       ', $now
+            );
 
             $this->setOrder('sort_order', self::SORT_ORDER_ASC);
             $this->setFlag('validation_filter', true);

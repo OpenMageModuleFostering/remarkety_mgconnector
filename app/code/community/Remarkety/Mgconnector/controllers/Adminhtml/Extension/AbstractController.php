@@ -10,6 +10,18 @@
 abstract class Remarkety_Mgconnector_Adminhtml_Extension_AbstractController
     extends Mage_Adminhtml_Controller_Action
 {
+
+    /**
+     * Is allowed action
+     *
+     * @return bool
+     */
+
+    protected function _isAllowed() 
+    {
+        return true;
+    }
+
     /**
      * Init action.
      *

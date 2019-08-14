@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Upgrade script from version 1.4.7.2 to 1.4.8.0
+ * Upgrade script from version 1.1.2.9 to 1.1.3.0
  *
  * @category   Remarkety
  * @package    Remarkety_Mgconnector
@@ -10,14 +10,12 @@
 $installer = $this;
 $installer->startSetup();
 
-
 $installer->getConnection()
     ->addColumn(
-        $installer->getTable('catalogrule/rule'), 'updated_at', array(
+        $installer->getTable('catalogrule'), 'updated_at', array(
         'type'      => Varien_Db_Ddl_Table::TYPE_TIMESTAMP,
-        'nullable'  => true,
-        'default'  => null,
-        'comment'  => 'updated_at',
+        'default'  => Varien_Db_Ddl_Table::TIMESTAMP_UPDATE,
+        'comment'  => 'update date',
         )
     );
 

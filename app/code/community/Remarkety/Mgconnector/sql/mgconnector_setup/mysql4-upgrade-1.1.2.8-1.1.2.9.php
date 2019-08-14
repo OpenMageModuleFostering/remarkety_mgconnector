@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Upgrade script from version 1.1.2.8 to 1.3.0.0
+ * Upgrade script from version 1.1.2.8 to 1.1.2.9
  *
  * @category   Remarkety
  * @package    Remarkety_Mgconnector

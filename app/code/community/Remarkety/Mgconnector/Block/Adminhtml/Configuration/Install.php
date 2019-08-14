@@ -26,10 +26,12 @@ class Remarkety_Mgconnector_Block_Adminhtml_Configuration_Install extends Mage_A
 
         $this->_removeButton('back');
         $this->_removeButton('reset');
-        $this->_addButton('save', array(
+        $this->_addButton(
+            'save', array(
             'label'     => Mage::helper('adminhtml')->__('Complete Installation'),
             'onclick'   => 'editForm.submit();',
             'class'     => 'save',
-        ), 1);
+            ), 1
+        );
     }
 }

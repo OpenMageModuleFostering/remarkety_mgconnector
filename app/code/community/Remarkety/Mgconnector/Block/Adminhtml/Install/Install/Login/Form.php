@@ -16,11 +16,13 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Install_Login_Form extends M
      */
     protected function _prepareForm()
     {
-        $form = new Varien_Data_Form(array(
+        $form = new Varien_Data_Form(
+            array(
             'id' => 'edit_form',
             'action' => $this->getUrl('*/install/complete'),
             'method' => 'post',
-        ));
+            )
+        );
         $form->setFieldContainerIdPrefix('data');
         $form->setUseContainer(true);
         $this->setForm($form);
@@ -32,10 +34,12 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Install_Login_Form extends M
             )
         );
 
-        $fieldset->addField('mode', 'hidden', array(
+        $fieldset->addField(
+            'mode', 'hidden', array(
             'name' => 'data[mode]',
             'value' => 'install_login',
-        ));
+            )
+        );
         $noAccountUrl = $this->getUrl('*/install/install', array('mode' => Remarkety_Mgconnector_Model_Install::MODE_INSTALL_CREATE));
         
         /*$headingHtml =
@@ -65,39 +69,47 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Install_Login_Form extends M
 
         $noAccountUrl = $this->getUrl('*/install/install', array('mode' => Remarkety_Mgconnector_Model_Install::MODE_INSTALL_CREATE));
         
-        $html = '<small style="float:left;width:100%;">' . sprintf($this->__(
-        		'Don\'t have a Remarkety account yet? <a href="%s">Click here</a>'
-        ), $noAccountUrl) . '</small>';
+        $html = '<small style="float:left;width:100%;">' . sprintf(
+            $this->__(
+                'Don\'t have a Remarkety account yet? <a href="%s">Click here</a>'
+            ), $noAccountUrl
+        ) . '</small>';
         
-        $fieldset->addField('email', 'text', array(
+        $fieldset->addField(
+            'email', 'text', array(
             'label' => $this->__('Email address for the Remarkety account:'),
             'name' => 'data[email]',
             'required' => true,
             'class' => 'validate-email',
-        		/*
+                /*
             'after_element_html' => $html,
-        	'<small style="float:left;width:100%;">' . $this->__(
+            '<small style="float:left;width:100%;">' . $this->__(
                     'If you’ve already registered to Remarkety, please use the email you used to open your account.
                     If you haven’t, please click on the button "Create New Account And Install" below.'
                 ) . '</small>',
                */
             'style' => 'float:left',
-        ));
+            )
+        );
 
-        $fieldset->addField('password', 'password', array(
+        $fieldset->addField(
+            'password', 'password', array(
             'label' => $this->__('Password:'),
             'name' => 'data[password]',
             'required' => true,
             'class' => 'required-entry'
-        ));
+            )
+        );
 
-        $fieldset->addField('store_id', 'select', array(
+        $fieldset->addField(
+            'store_id', 'select', array(
             'name' => 'data[store_id]',
             'label' => $this->__('Connect this view:'),
             'required' => true,
             'values' => Mage::getSingleton('adminhtml/system_store')->getStoreValuesForForm(false, false),
             //'value' => $this->getRequest()->getParam('store'),
-        ));
+            )
+        );
 
 //         $fieldset->addField('terms', 'checkbox', array(
 //             'label' => false,
@@ -108,13 +120,15 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Install_Login_Form extends M
 //             'after_element_html' => $this->__('I agree to Remarkety’s <a href="%s">terms of use</a>.', '#'),
 //         ));
 
-        $fieldset->addField('login', 'note', array(
+        $fieldset->addField(
+            'login', 'note', array(
             'label' => false,
             'name' => 'button',
             'after_element_html' => '<button type="button" class="save" onclick="editForm.submit();"><span>'
                 . $this->__('Login And Connect') . '
                 </span></button>',
-        ));
+            )
+        );
 
 //         $fieldset->addField('create', 'note', array(
 //             'label' => false,

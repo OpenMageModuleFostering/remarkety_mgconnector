@@ -4,7 +4,8 @@ class Remarkety_Mgconnector_Helper_Configuration extends Mage_Core_Helper_Abstra
 {
     private $_cache = array();
 
-    public function getValue($key, $default = null) {
+    public function getValue($key, $default = null) 
+    {
         // Check if the key is in our cache
         if (key_exists($key, $this->_cache))
             return $this->_cache[$key];
@@ -22,6 +23,7 @@ class Remarkety_Mgconnector_Helper_Configuration extends Mage_Core_Helper_Abstra
             $this->_cache[$key] = $value;
             return $value;
         }
+
         return $default;
 
     }

@@ -49,7 +49,8 @@ class Remarkety_Mgconnector_Model_Extension_RewardPoints_MagestoreRewardPoints
     public function modifyCustomersCollection(&$collection)
     {
         $collection->getSelect()
-            ->joinLeft(array('rp' => $collection->getTable('rewardpoints/customer')),
+            ->joinLeft(
+                array('rp' => $collection->getTable('rewardpoints/customer')),
                 'e.entity_id = rp.customer_id',
                 array('rewards_points' => 'point_balance')
             );

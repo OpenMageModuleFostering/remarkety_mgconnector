@@ -13,6 +13,7 @@ class Remarkety_Mgconnector_Block_Tracking_Product extends Remarkety_Mgconnector
         if($this->getProduct()){
             return $this->getProduct();
         }
+
         return Mage::registry('product');
     }
 
@@ -20,7 +21,8 @@ class Remarkety_Mgconnector_Block_Tracking_Product extends Remarkety_Mgconnector
      * Get arrays of Category ids and names
      * @return array
      */
-    public function getCategories(){
+    public function getCategories()
+    {
         if(empty($this->_CategoryNames) || empty($this->_CategoryIds)) {
             $cats = $this->getActiveProduct()->getCategoryIds();
             $productCategoryNames = Array();
@@ -28,9 +30,11 @@ class Remarkety_Mgconnector_Block_Tracking_Product extends Remarkety_Mgconnector
                 $_cat = Mage::getModel('catalog/category')->load($category_id);
                 $productCategoryNames[] = $_cat->getName();
             }
+
             $this->_CategoryNames = $productCategoryNames;
             $this->_CategoryIds = $cats;
         }
+
         return Array(
             "ids" => $this->_CategoryIds,
             "names" => $this->_CategoryNames
@@ -41,7 +45,8 @@ class Remarkety_Mgconnector_Block_Tracking_Product extends Remarkety_Mgconnector
      * Return array of Category names
      * @return array
      */
-    public function getCategoryNames(){
+    public function getCategoryNames()
+    {
         $info = $this->getCategories();
         return $info['names'];
     }
@@ -50,7 +55,8 @@ class Remarkety_Mgconnector_Block_Tracking_Product extends Remarkety_Mgconnector
      * Return array of Category ids
      * @return array
      */
-    public function getCategoryIds(){
+    public function getCategoryIds()
+    {
         $info = $this->getCategories();
         return $info['ids'];
     }

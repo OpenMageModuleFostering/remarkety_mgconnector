@@ -17,7 +17,8 @@ define('REMARKETY_EXECUTION_TIME', 'EXECUTION_TIME_MS');
 define('REMARKETY_LOG', 'remarkety_mgconnector.log');
 define('REMARKETY_LOG_SEPARATOR', '|');
 
-class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
+class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract
+{
 
     const XPATH_CATEGORIES_TO_IGNORE = 'remarkety/mgconnector/categories-to-ignore';
     private $_categoriesToIgnore = array();
@@ -186,7 +187,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $logMsg = implode(REMARKETY_LOG_SEPARATOR, array($function, $status, $message, json_encode($data)));
 //        $force = ($status != REMARKETY_MGCONNECTOR_CALLED_STATUS);
         if ($this->_sendLogInResponse)
-            $this->_log[] = $logLevel.": ".$logMsg;
+            $this->_log[] = $logLevel . ": " . $logMsg;
         Mage::log($logMsg, $logLevel, REMARKETY_LOG);
     }
 
@@ -195,7 +196,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $logMsg = implode(REMARKETY_LOG_SEPARATOR, array($function, $status, $message, json_encode($data)));
 //        $force = ($status != REMARKETY_MGCONNECTOR_CALLED_STATUS);
         if ($this->_sendLogInResponse)
-            $this->_log[] = Zend_Log::DEBUG.": ".$logMsg;
+            $this->_log[] = Zend_Log::DEBUG . ": " . $logMsg;
         Mage::log($logMsg, Zend_Log::DEBUG, REMARKETY_LOG);
     }
 
@@ -275,9 +276,9 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             }
         }
         //if no categories found, get from parent product
-        if($getFromParent && empty($categories)){
+        if ($getFromParent && empty($categories)) {
             $parent_id = $this->getProductParentId($product);
-            if($parent_id !== false){
+            if ($parent_id !== false) {
                 $parentProduct = $this->loadProduct($parent_id);
                 return $this->_productCategories($parentProduct, false);
             }
@@ -297,18 +298,20 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         return $currencyInfo;
     }
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->_startTime = microtime(true);
         $collection = Mage::getModel('core/config_data')->getCollection();
         $collection
             ->getSelect()
             ->where('path = ?', self::XPATH_CATEGORIES_TO_IGNORE);
         foreach ($collection as $config) {
-            $this->_categoriesToIgnore = array_merge($this->_categoriesToIgnore, explode(",",$config->getValue()));
+            $this->_categoriesToIgnore = array_merge($this->_categoriesToIgnore, explode(",", $config->getValue()));
         }
     }
 
-    public function getSubscribers($mage_store_view_id = null, $limit = null, $page = null, $sinceId = null) {
+    public function getSubscribers($mage_store_view_id = null, $limit = null, $page = null, $sinceId = null)
+    {
         register_shutdown_function('handleShutdown');
         $ret = array();
         $pageNumber = null;
@@ -356,7 +359,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, '');
             return $this->_wrapResponse($ret, REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
-        }  catch (Mage_Core_Exception $e) {
+        } catch (Mage_Core_Exception $e) {
             $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
             return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
         } catch (Exception $e) {
@@ -430,7 +433,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             // $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
 
             $store = Mage::getModel('core/store')->load($mage_store_view_id);
-            $name= $store->getName();
+            $name = $store->getName();
 //            $viewName = Mage::getModel(""); XXX
             $customersCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id)); //$mage_store_id));
             if ($updated_at_min != null) {
@@ -540,11 +543,6 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
             $ordersCollection = Mage::getModel("sales/order")
                 ->getCollection()
-                ->join(
-                    array('payment' => 'sales/order_payment'),
-                    'main_table.entity_id=payment.parent_id',
-                    array('payment_method' => 'payment.method')
-                )
                 ->addOrder('updated_at', 'ASC')
                 ->addAttributeToSelect('*');
 
@@ -604,115 +602,116 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             */
 
             $productIdsToLoad = array();
-            $paymentMethods = array(); //hash table for payment code->name
             $orderIds = array();
 
             foreach ($ordersCollection as $order) {
-                $orderData = $order->toArray();
-                if (!empty($orderData['relation_child_id'])) {
-                    continue;
-                }
-                $orderIds[] = $orderData['entity_id'];
-                $orderData['rem_main_increment_id'] = (empty($orderData['original_increment_id'])) ? $orderData['increment_id'] : $orderData['original_increment_id'];
-                $orderData['currency'] = $this->_currencyInfo($orderData['order_currency_code']);
-
-                $subscriberModel->loadByEmail($orderData['customer_email']);
-                $orderData['customer_registered_to_newsletter'] = $subscriberModel->isSubscribed();
-
-                $addressID = null;
-
-                if (isset($orderData['billing_address_id']) && $orderData['billing_address_id']) {
-                    $addressID = $orderData['billing_address_id'];
-                } elseif (isset($orderData['shipping_address_id']) && $orderData['shipping_address_id']) {
-                    $addressID = $orderData['shipping_address_id'];
-                }
-
-                if (!empty($addressID)) {
-                    $address = Mage::getModel('sales/order_address')->load($addressID)->toArray();
-                    $orderData['address'] = $address;
-                }
-
-                //convert payment method code to name
-                if(!empty($orderData['payment_method'])){
-                    if(isset($paymentMethods[$orderData['payment_method']])){ //use hash table if found
-                        $orderData['payment_method'] = $paymentMethods[$orderData['payment_method']];
-                    } else { //get name from config
-                        $method = Mage::getStoreConfig('payment/'.$orderData['payment_method'].'/title');
-                        if(!empty($method)){
-                            $paymentMethods[$orderData['payment_method']] = $method;
-                            $orderData['payment_method'] = $method;
-                        }
+                try {
+                    $orderData = $order->toArray();
+                    if (!empty($orderData['relation_child_id'])) {
+                        continue;
                     }
-                }
+                    $orderIds[] = $orderData['entity_id'];
+                    $orderData['rem_main_increment_id'] = (empty($orderData['original_increment_id'])) ? $orderData['increment_id'] : $orderData['original_increment_id'];
+                    $orderData['currency'] = $this->_currencyInfo($orderData['order_currency_code']);
 
-                $storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+                    $subscriberModel->loadByEmail($orderData['customer_email']);
+                    $orderData['customer_registered_to_newsletter'] = $subscriberModel->isSubscribed();
 
-                $itemsCollection = $order->getItemsCollection();
+                    $addressID = null;
+
+                    if (isset($orderData['billing_address_id']) && $orderData['billing_address_id']) {
+                        $addressID = $orderData['billing_address_id'];
+                    } elseif (isset($orderData['shipping_address_id']) && $orderData['shipping_address_id']) {
+                        $addressID = $orderData['shipping_address_id'];
+                    }
+
+                    if (!empty($addressID)) {
+                        $address = Mage::getModel('sales/order_address')->load($addressID)->toArray();
+                        $orderData['address'] = $address;
+                    }
+
+                    $storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+
+//                    $itemsCollection = $order->getItemsCollection();
 //                $itemsCollection->join(
 //
 //                );
-//                $itemsCollection = $order->getAllVisibleItems();
+                $itemsCollection = $order->getAllVisibleItems();
 
-                foreach ($itemsCollection as $item) {
-                    $product = null;
+                    foreach ($itemsCollection as $item) {
+                        $product = null;
 
-                    try {
-                        $itemData = $item->toArray();
-                        $productIdsToLoad[] = $itemData['product_id'];
-                        /* The item data is loaded later and populated for performance reasons - get all the products at once instead of one-by-one in a loop */
-                        $orderData['items'][$itemData['item_id']] = $itemData;
+                        try {
+                            $itemData = $item->toArray();
+                            $productIdsToLoad[] = $itemData['product_id'];
+                            /* The item data is loaded later and populated for performance reasons - get all the products at once instead of one-by-one in a loop */
+                            $orderData['items'][$itemData['item_id']] = $itemData;
 
-                    } catch (Exception $e) {
-                        $this->_log(__FUNCTION__, 'Error in handling order items for order ID '.$orderData['entity_id'], $e->getMessage(), $myArgs);
+                        } catch (Exception $e) {
+                            $this->_log(__FUNCTION__, 'Error in handling order items for order ID ' . $orderData['entity_id'], $e->getMessage(), $myArgs);
+                        }
                     }
+
+                    $groupModel->load($orderData['customer_group_id']);
+                    $groupName = $groupModel->getCustomerGroupCode();
+                    $orderData['customer_group'] = $groupName;
+
+
+                    $orders[] = $orderData;
+                } catch (Exception $e) {
+                    $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, 'Fetch order failed. continue to next order - ' . $e->getMessage(), $myArgs);
+                    continue;
                 }
-
-                $groupModel->load($orderData['customer_group_id']);
-                $groupName = $groupModel->getCustomerGroupCode();
-                $orderData['customer_group'] = $groupName;
-
-
-                $orders[] = $orderData;
             }
 
             //load all payment methods at once
             $paymentMethods = $this->loadPaymentMethods($orderIds);
 
             // Load the products all at once and populate the items
-
             $this->loadProducts($mage_store_view_id, $productIdsToLoad);
 
             $ret = array();
             foreach ($orders as &$orderData) {
-                if (array_key_exists('items', $orderData)) {
-                    foreach ($orderData['items'] as &$itemData) {
-                        $product = $this->loadProduct($itemData['product_id']);
-                        if (empty($product)) {
-                            $this->debug("Could not load product, productID: ".$itemData['product_id']);
-                            continue;
-                        }
+                try {
+                    if (array_key_exists('items', $orderData)) {
+                        foreach ($orderData['items'] as &$itemData) {
+                            try {
+                                $product = $this->loadProduct($itemData['product_id']);
+                                if (empty($product)) {
+                                    $this->debug("Could not load product, productID: " . $itemData['product_id']);
+                                    continue;
+                                }
 
 //                        $product->setStoreId($mage_store_view_id)->load($product->getId());
-                        $itemData['base_image'] = $this->getImageUrl($product, 'image', $mage_store_view_id);
-                        $itemData['small_image'] = $this->getImageUrl($product, 'small', $mage_store_view_id);
-                        $itemData['thumbnail_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_view_id);
+                                $itemData['base_image'] = $this->getImageUrl($product, 'image', $mage_store_view_id);
+                                $itemData['small_image'] = $this->getImageUrl($product, 'small', $mage_store_view_id);
+                                $itemData['thumbnail_image'] = $this->getImageUrl($product, 'thumbnail', $mage_store_view_id);
 
-                        $itemData['name'] = $this->getProductName($product, $mage_store_view_id);
+                                $itemData['name'] = $this->getProductName($product, $mage_store_view_id);
 
-                        $itemData['type_id'] = $product->getData('type_id');
-                        //$itemData['categories'] = $this->_productCategories($product);
-                        $prodUrl = $this->getProdUrl($product, $storeUrl, $mage_store_view_id);
-                        $itemData['url_path'] = $prodUrl;
+                                $itemData['type_id'] = $product->getData('type_id');
+                                //$itemData['categories'] = $this->_productCategories($product);
+                                $prodUrl = $this->getProdUrl($product, $storeUrl, $mage_store_view_id);
+                                $itemData['url_path'] = $prodUrl;
+                            } catch (Exception $e) {
+                                $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, 'Handle order items data failed. continue to next item - ' . $e->getMessage(), $myArgs);
+                                continue;
+                            }
+                        }
                     }
-                }
-                //set payment method
-                if(!empty($orderData['entity_id'])){
-                    if(isset($paymentMethods[$orderData['entity_id']])){
-                        $orderData['payment_method'] = $paymentMethods[$orderData['entity_id']];
+                    //set payment method
+                    if (!empty($orderData['entity_id'])) {
+                        if (isset($paymentMethods[$orderData['entity_id']])) {
+                            $orderData['payment_method'] = $paymentMethods[$orderData['entity_id']];
+                        }
                     }
+                    $ret[] = $this->_filter_output_data($orderData, $this->response_mask['order']);
+                } catch (Exception $e) {
+                    $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, 'Handle order failed. continue to next order - ' . $e->getMessage(), $myArgs);
+                    continue;
                 }
-                $ret[] = $this->_filter_output_data($orderData, $this->response_mask['order']);
             }
+
 
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_SUCCESS_STATUS, null, '');
             return $this->_wrapResponse($ret, REMARKETY_MGCONNECTOR_SUCCESS_STATUS);
@@ -774,12 +773,12 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 }
             }
 
-            if (!is_null($pageSize)){
+            if (!is_null($pageSize)) {
                 $quotesCollection->setPageSize($pageSize)->setCurPage($pageNumber);
             }
 
             //$storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
-            $this->_debug(__FUNCTION__, " collection SQL: ".$quotesCollection->getSelect()->__toString(), null, null);
+            $this->_debug(__FUNCTION__, " collection SQL: " . $quotesCollection->getSelect()->__toString(), null, null);
 
             foreach ($quotesCollection as $quote) {
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, "inside carts loop", null);
@@ -852,12 +851,11 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $ret = array();
         $myArgs = func_get_args();
         $this->simpleProductsStandalone = Mage::helper('mgconnector/configuration')->getValue('configurable_standalone', false);
-        try
-        {
+        try {
             try {
                 $store = Mage::app()->getStore($mage_store_id);
                 Mage::app()->setCurrentStore($store);
-            } catch (Exception $ex){
+            } catch (Exception $ex) {
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_ERROR, "Cannot set active store", $myArgs);
             }
 
@@ -985,8 +983,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 */
 
                 $parent_id = $this->getProductParentId($product);
-                if($parent_id !== false){
-                    $productData['parent_id']  = $parent_id;
+                if ($parent_id !== false) {
+                    $productData['parent_id'] = $parent_id;
                 }
 
                 $productData = $this->_filter_output_data($productData, $this->response_mask['product']);
@@ -1003,7 +1001,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         }
     }
 
-    private function getCategories($product) {
+    private function getCategories($product)
+    {
         $categories = array();
         $categoryCollection = $product->getCategoryCollection()->addAttributeToSelect('name');
         foreach ($categoryCollection as $category) {
@@ -1038,13 +1037,13 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $storeUrl = $storeView->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK);
             $ret = array(
                 'domain' => $baseUrl,
-                'storeFrontUrl'  => $storeUrl,
+                'storeFrontUrl' => $storeUrl,
                 'name' => $storeName,
-                'viewName'  => $storeViewName,
+                'viewName' => $storeViewName,
                 'phone' => Mage::getStoreConfig('general/store_information/phone', $mage_store_view_id),
                 'contactEmail' => Mage::getStoreConfig('contacts/email/recipient_email', $mage_store_view_id),
                 'timezone' => Mage::getStoreConfig('general/locale/timezone', $mage_store_view_id),
-                'locale'	=> Mage::getStoreConfig('general/locale/code', $mage_store_view_id),
+                'locale' => Mage::getStoreConfig('general/locale/code', $mage_store_view_id),
                 'address' => Mage::getStoreConfig('general/store_information/address', $mage_store_view_id),
                 'country' => Mage::getStoreConfig('general/store_information/merchant_country', $mage_store_view_id),
                 'currency' => $currency,
@@ -1222,13 +1221,14 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         }
     }
 
-    public function getProductParentId($product){
+    public function getProductParentId($product)
+    {
         if (!in_array($product->type_id, $this->_groupedTypes)) {
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
 
-            if($arrayOfParentIds && count($arrayOfParentIds)) {
-                if(is_array($arrayOfParentIds)) {
+            if ($arrayOfParentIds && count($arrayOfParentIds)) {
+                if (is_array($arrayOfParentIds)) {
                     $parentId = $arrayOfParentIds[0];
                 } else {
                     $parentId = $arrayOfParentIds;
@@ -1244,7 +1244,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     public function getProdUrl($product, $storeUrl, $mage_store_view_id)
     {
-        $this->_debug(__FUNCTION__, "Start - prod id ".$product->getId(), null, '');
+        $this->_debug(__FUNCTION__, "Start - prod id " . $product->getId(), null, '');
         $url = '';
         $visibility = $product->getVisibility();
         if ($visibility == 1 || !in_array($product->type_id, $this->_groupedTypes)) {
@@ -1260,7 +1260,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 }
             }
             if (!is_null($parentId)) {
-                $this->_debug(__FUNCTION__, "parent id ".$parentId, null, '');
+                $this->_debug(__FUNCTION__, "parent id " . $parentId, null, '');
                 $product_id = $parentId;
             } else {
                 $product_id = $product->getId();
@@ -1269,24 +1269,24 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $product_id = $product->getId();
         }
 
-        try{
+        try {
             $url = Mage::helper('mgconnector/urls')->getValue($product_id, $mage_store_view_id);
-            if(!empty($url)) {
+            if (!empty($url)) {
                 $url = $storeUrl . $url;
-                if(Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id)) {
+                if (Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id)) {
                     $url .= Mage::getStoreConfig('catalog/seo/product_url_suffix', $mage_store_view_id);
                 }
             }
-            $this->_debug(__FUNCTION__, "after setStoreId getProductUrl: ".$url, null, '');
-        }catch(Exception $e){
+            $this->_debug(__FUNCTION__, "after setStoreId getProductUrl: " . $url, null, '');
+        } catch (Exception $e) {
             $this->_log(__FUNCTION__, "failed after setStoreId: ", $e->getMessage(), '');
         }
 
-        if(!empty($url)) {
+        if (!empty($url)) {
             return $url;
         } else {
             $getProductUrl = $product->getProductUrl();
-            $this->_debug(__FUNCTION__, "getProductUrl: ".$getProductUrl, null, '');
+            $this->_debug(__FUNCTION__, "getProductUrl: " . $getProductUrl, null, '');
             return $getProductUrl;
         }
 
@@ -1301,8 +1301,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
 
-            if($arrayOfParentIds && count($arrayOfParentIds)) {
-                if(is_array($arrayOfParentIds)) {
+            if ($arrayOfParentIds && count($arrayOfParentIds)) {
+                if (is_array($arrayOfParentIds)) {
                     $parentId = $arrayOfParentIds[0];
                 } else {
                     $parentId = $arrayOfParentIds;
@@ -1310,7 +1310,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             }
 
             if (!is_null($parentId)) {
-                $this->_debug(__FUNCTION__, null, "parent id: ".$parentId, '');
+                $this->_debug(__FUNCTION__, null, "parent id: " . $parentId, '');
                 $product = $this->loadProduct($parentId, $mage_store_view_id);
             }
         } else {
@@ -1318,7 +1318,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         }
         $this->_debug(__FUNCTION__, null, "Getting image url for product: " . $product->getId(), '');
 
-        switch($type){
+        switch ($type) {
             case "small":
                 $imagePath = $product->getSmallImage();
                 break;
@@ -1335,40 +1335,42 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
 
     }
 
-    public function getCartRecoveryURL($cart_id){
+    public function getCartRecoveryURL($cart_id)
+    {
         $recovery = Mage::getModel('mgconnector/recovery');
         $id = $recovery->encodeQuoteId($cart_id);
         $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/recovery/cart/quote_id/' . $id;
         return $url;
     }
-    
-    public function getProductName($product, $mage_store_view_id){
+
+    public function getProductName($product, $mage_store_view_id)
+    {
         $name = '';
-        if(!$this->simpleProductsStandalone && !in_array($product->type_id, $this->_groupedTypes)) {
-            $this->_debug(__FUNCTION__, null, "not config prod id ".$product->getId(), '');
+        if (!$this->simpleProductsStandalone && !in_array($product->type_id, $this->_groupedTypes)) {
+            $this->_debug(__FUNCTION__, null, "not config prod id " . $product->getId(), '');
             $arrayOfParentIds = Mage::helper('mgconnector/links')->getParentId($product->getId());
             $parentId = null;
 
-            if($arrayOfParentIds && count($arrayOfParentIds)) {
-                if(is_array($arrayOfParentIds)) {
+            if ($arrayOfParentIds && count($arrayOfParentIds)) {
+                if (is_array($arrayOfParentIds)) {
                     $parentId = $arrayOfParentIds[0];
                 } else {
                     $parentId = $arrayOfParentIds;
                 }
             }
 
-            if(!is_null($parentId)){
-                $this->_debug(__FUNCTION__, null, "parent id: ".$parentId, '');
+            if (!is_null($parentId)) {
+                $this->_debug(__FUNCTION__, null, "parent id: " . $parentId, '');
                 $product = $this->loadProduct($parentId);
 //    			$product->setStoreId($mage_store_view_id)->load($parentId);
                 //$product->setStoreId($mage_store_view_id);
             }
-        }else{
-            $this->_debug(__FUNCTION__, null, "configurable prod id ".$product->getId(), '');
+        } else {
+            $this->_debug(__FUNCTION__, null, "configurable prod id " . $product->getId(), '');
         }
 
         $name = $product->getName();
-        $this->_debug(__FUNCTION__, null, "Prod name: ".$name, '');
+        $this->_debug(__FUNCTION__, null, "Prod name: " . $name, '');
         return $name;
     }
 
@@ -1392,7 +1394,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg, $myArgs);
                 return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $msg);
             }
-            Mage::register('remarkety_subscriber_deleted',true, true);
+            Mage::register('remarkety_subscriber_deleted', true, true);
             $subscriber->unsubscribe();
 
             $msg = "Successfuly unsubscribed customer using email: " . $email;
@@ -1415,7 +1417,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         return $this->configurable_product_model;
     }
 
-    private function loadProduct($productId) {
+    private function loadProduct($productId)
+    {
         if (!isset($this->_productCache[$productId])) {
             $this->_productCache[$productId] = Mage::getModel("catalog/product")->load($productId);
         }
@@ -1427,7 +1430,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
      * @param $orderIds
      * @return array
      */
-    private function loadPaymentMethods($orderIds){
+    private function loadPaymentMethods($orderIds)
+    {
 
         $orderIds = array_unique($orderIds);
         $paymentsCollection = Mage::getModel("sales/order_payment")
@@ -1440,14 +1444,14 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $payments = array();
         $paymentMethodsNames = array();
 
-        foreach($paymentsCollection as $payment){
+        foreach ($paymentsCollection as $payment) {
             $row = $payment->toArray();
-            if(!isset($payments[$row['parent_id']])){
+            if (!isset($payments[$row['parent_id']])) {
                 $method = $row['method'];
                 //convert method code to name
-                if(!isset($paymentMethodsNames[$method])){
-                    $methodName = Mage::getStoreConfig('payment/'.$method.'/title');
-                    if(!empty($methodName)){
+                if (!isset($paymentMethodsNames[$method])) {
+                    $methodName = Mage::getStoreConfig('payment/' . $method . '/title');
+                    if (!empty($methodName)) {
                         $paymentMethodsNames[$method] = $methodName;
                     } else {
                         $paymentMethodsNames[$method] = $method;
@@ -1461,7 +1465,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         return $payments;
     }
 
-    private function loadProducts($storeId, $productIds, $loadParents = true) {
+    private function loadProducts($storeId, $productIds, $loadParents = true)
+    {
         if (empty($productIds))
             return;
         $productIds = array_unique($productIds);
@@ -1475,7 +1480,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             ->addCategoryIds()
 //	            ->addUrlRewrite()
             ->addAttributeToSelect('*');
-        $productsCollection->load(false,true);
+        $productsCollection->load(false, true);
         $parentIds = array();
         foreach ($productsCollection as $product) {
             $productId = $product->getId();
@@ -1489,11 +1494,13 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->loadProducts($storeId, $parentIds, false);
     }
 
-    public function sendLogInResponse() {
+    public function sendLogInResponse()
+    {
         $this->_sendLogInResponse = true;
     }
 
-    private function _setupConfiguration() {
+    private function _setupConfiguration()
+    {
         $keys = array('categories-to-ignore', 'configurable_standalone');
 
         $this->simpleProductsStandalone = Mage::getStoreConfig('remarkety/mgconnector/configurable_standalone');

@@ -1,3 +1,27 @@
+1.4.9.5
+-------
+Get only visible items for orders
+
+1.4.9.4
+-------
+Skip orders with data errors
+
+1.4.9.3
+-------
+Bugfix - Orders sync issue fixed
+1.4.9.2
+-------
+Bugfix - missing Remarkety menu item
+
+1.4.9.1
+-------
+- Webtracking support for mixed http & https store
+
+1.4.8.8
+-------
+- Bugfix - Install timeout increase
+- Bugfix - Trigger event after cache cleared
+
 1.4.8.7
 -------
 - Bugfix - Support PHP version 5.3

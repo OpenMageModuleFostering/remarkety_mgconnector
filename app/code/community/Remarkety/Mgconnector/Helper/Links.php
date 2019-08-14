@@ -35,6 +35,7 @@ class Remarkety_Mgconnector_Helper_Links extends Mage_Core_Helper_Abstract
             if (!isset($this->simpleIds[$parentId])) {
                 $this->simpleIds[$parentId] = array();
             }
+
             $this->simpleIds[$parentId][] = $productId;
             $this->parentId[$productId] = $parentId;
         }
@@ -67,6 +68,7 @@ class Remarkety_Mgconnector_Helper_Links extends Mage_Core_Helper_Abstract
         if (isset($this->simpleIds[$productId])) {
             return $this->simpleIds[$productId];
         }
+
         return null;
     }
 }

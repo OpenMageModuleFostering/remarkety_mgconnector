@@ -26,16 +26,20 @@ class Remarkety_Mgconnector_Block_Adminhtml_Configuration_Configuration extends 
 
         $this->_removeButton('back');
         $this->_removeButton('reset');
-        $this->_addButton('save', array(
+        $this->_addButton(
+            'save', array(
             'label'     => Mage::helper('adminhtml')->__('Save'),
             'onclick'   => 'editForm.submit();',
             'class'     => 'save',
-        ), 1);
+            ), 1
+        );
 
-        $this->_addButton('reinstall', array(
+        $this->_addButton(
+            'reinstall', array(
             'label'     => Mage::helper('adminhtml')->__('Reinstall'),
             'onclick'   => "return confirm('Are you sure?') ? window.location = '" . $this->getUrl('*/*/reinstall')."' : false;",
             'class'     => 'delete',
-        ), 0);
+            ), 0
+        );
     }
 }

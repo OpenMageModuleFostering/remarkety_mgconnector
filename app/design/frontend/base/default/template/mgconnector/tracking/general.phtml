@@ -3,12 +3,13 @@
     var _rmData = _rmData || [];
     _rmData.push(['setStoreKey', '<?php echo $this->getRemarketyPublicId(); ?>']);
     <?php if(!$this->shouldBypassCache()): ?>
-        <?php $_rmEmail = $this->getEmail(); if ($_rmEmail): ?>_rmData.push(["setCustomer", "<?php echo $_rmEmail; ?>"]);<?php endif; ?>
+        <?php $_rmEmail = $this->getEmail(); if ($_rmEmail): ?>_rmData.push(["setCustomer", "<?php echo $_rmEmail; ?>"]);<?php 
+        endif; ?>
     <?php else: ?>
         (function(d, t) {
                 var g = d.createElement(t),
                     s = d.getElementsByTagName(t)[0];
-                g.src = '<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/webtracking/identify?noMagentoBoosterCache'; ?>&t='+(new Date().getTime())+'&r='+Math.random();
+                g.src = '<?php echo $this->getStoreBaseUrl() . 'remarkety/webtracking/identify?noMagentoBoosterCache'; ?>&t='+(new Date().getTime())+'&r='+Math.random();
                 s.parentNode.insertBefore(g, s);
             }(document, 'script'));
     <?php endif; ?>

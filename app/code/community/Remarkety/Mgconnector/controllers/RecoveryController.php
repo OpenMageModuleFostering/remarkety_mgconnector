@@ -42,7 +42,6 @@ class Remarkety_Mgconnector_RecoveryController extends Mage_Core_Controller_Fron
         }
 
         try {
-
             $recovery->quoteRestore($quoteId);
         } catch (Mage_Core_Exception $e) {
             Mage::throwException(self::MESSAGE_ERROR_DURING_PROCESSING);

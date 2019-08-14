@@ -30,15 +30,17 @@ class Remarkety_Mgconnector_Helper_Urls extends Mage_Core_Helper_Abstract
             }
 
             return $this->_urlKey[$store_id][$productId];
-
         }
+
         return false;
     }
 
-    private function _getAttributeId() {
+    private function _getAttributeId() 
+    {
         if(!$this->_attributeId) {
             $this->_attributeId = Mage::getResourceModel('eav/entity_attribute')->getIdByCode('catalog_product', 'url_key');
         }
+
         return $this->_attributeId;
     }
 

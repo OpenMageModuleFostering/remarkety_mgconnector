@@ -20,10 +20,11 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Grid_Column_Renderer_EventType
     {
         $value = $row->getData($this->getColumn()->getIndex());
         try {
-			$payload = json_encode(unserialize($row->getData('payload')));
+            $payload = json_encode(unserialize($row->getData('payload')));
         } catch (\Exception $e) {
-        	$payload = "?";
+            $payload = "?";
         }
-		return '<span title="'.htmlentities($payload).'">'.$value.'</span>';
+
+        return '<span title="'.htmlentities($payload).'">'.$value.'</span>';
     }
 }

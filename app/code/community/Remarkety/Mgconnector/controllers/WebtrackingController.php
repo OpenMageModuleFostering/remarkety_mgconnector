@@ -11,7 +11,7 @@ class Remarkety_Mgconnector_WebtrackingController extends Mage_Core_Controller_F
 {
     public function identifyAction()
     {
-        $this->getResponse()->clearHeaders()->setHeader('Content-type','application/x-javascript',true);
+        $this->getResponse()->clearHeaders()->setHeader('Content-type', 'application/x-javascript', true);
         $email = $this->getEmail();
         if($email){
             $this->getResponse()->setBody('_rmData.push(["setCustomer", "'.$email.'"]);');
@@ -21,11 +21,13 @@ class Remarkety_Mgconnector_WebtrackingController extends Mage_Core_Controller_F
 
     }
 
-    private function getEmail(){
+    private function getEmail()
+    {
         if(Mage::getSingleton('customer/session')->isLoggedIn()){
             $customer = Mage::getSingleton('customer/session')->getCustomer();
             return $customer->getEmail();
         }
+
         $email = Mage::getSingleton('customer/session')->getSubscriberEmail();
         return empty($email) ? false : $email;
     }
