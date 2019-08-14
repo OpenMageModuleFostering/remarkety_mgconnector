@@ -23,7 +23,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Queue_Configure extends Mage_Adminht
 
         $this->_headerText = $this->__(
             'Configuration'
-            //             Mage::helper('mgconnector')->getInstalledVersion()
+//             Mage::helper('mgconnector')->getInstalledVersion()
         );
 
         $this->_removeButton('back');

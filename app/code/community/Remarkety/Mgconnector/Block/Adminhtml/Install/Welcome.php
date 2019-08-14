@@ -30,12 +30,10 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome extends Mage_Adminht
         $this->_removeButton('reset');
         $this->_removeButton('save');
 
-        $this->_addButton(
-            'reinstall', array(
+        $this->_addButton('reinstall', array(
             'label'     => Mage::helper('adminhtml')->__('Reinstall'),
             'onclick'   => "return confirm('Are you sure?') ? window.location = '" . $this->getUrl('*/install/reinstall')."' : false;",
             'class'     => 'delete',
-            ), 0
-        );
+        ), 0);
     }
 }

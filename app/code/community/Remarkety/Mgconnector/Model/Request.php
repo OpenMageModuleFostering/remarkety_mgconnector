@@ -12,7 +12,7 @@ class Remarkety_Mgconnector_Model_Request
     const REMARKETY_URI = 'https://app.remarkety.com/public/install/notify';
     const REMARKETY_STOREID_URI = 'https://app.remarkety.com/public/install/get-store-id';
     const REMARKETY_METHOD = 'POST';
-    const REMARKETY_TIMEOUT = 30;
+    const REMARKETY_TIMEOUT = 10;
     const REMARKETY_VERSION = 0.9;
     const REMARKETY_PLATFORM = 'MAGENTO';
     const REMARKETY_OEM = 'remarkety';
@@ -22,11 +22,12 @@ class Remarkety_Mgconnector_Model_Request
         return array(
             'adapter' => 'Zend_Http_Client_Adapter_Curl',
             'curloptions' => array(
+//                CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HEADER => true,
                 CURLOPT_CONNECTTIMEOUT => self::REMARKETY_TIMEOUT,
+//	            CURLOPT_SSL_CIPHER_LIST => "RC4-SHA"
+//                CURLOPT_SSL_VERIFYPEER => false,
             ),
-            'timeout' => self::REMARKETY_TIMEOUT,
-            'request_timeout' => self::REMARKETY_TIMEOUT
         );
     }
 
@@ -47,19 +48,16 @@ class Remarkety_Mgconnector_Model_Request
         return $arr;
     }
 
-    public function getStoreID($magento_store_id)
-    {
+    public function getStoreID($magento_store_id){
         try {
             $store = Mage::getModel('core/store')->load($magento_store_id);
             $payload = $this->_getPayloadBase();
 
-            $payload['selectedView'] = json_encode(
-                array(
+            $payload['selectedView'] = json_encode(array(
                 'website_id' => $store->getWebsiteId(),
                 'store_id' => $store->getGroupId(),
                 'view_id' => $magento_store_id,
-                )
-            );
+            ));
             $payload['key'] = Mage::getStoreConfig('remarkety/mgconnector/api_key');
 
             $client = new Zend_Http_Client(
@@ -81,11 +79,9 @@ class Remarkety_Mgconnector_Model_Request
                 if(!empty($body['storePublicId'])){
                     return $body['storePublicId'];
                 }
-
                 //if no store id
                 throw new Exception('Response from Remarkety without storeId');
             }
-
             switch ($response->getStatus()) {
                 case '200':
                     return $body;

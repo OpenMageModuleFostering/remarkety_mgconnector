@@ -9,18 +9,6 @@
  */
 class Remarkety_Mgconnector_Adminhtml_MgconnectorController extends Mage_Adminhtml_Controller_Action
 {
-
-    /**
-     * Is allowed action
-     *
-     * @return bool
-     */
-
-    protected function _isAllowed() 
-    {
-        return true;
-    }
-
     /**
      * Init action
      *
@@ -190,14 +178,12 @@ class Remarkety_Mgconnector_Adminhtml_MgconnectorController extends Mage_Adminht
             $mode = $forceMode;
         }
 
-        if(!in_array(
-            $mode, array(
+        if(!in_array($mode, array(
             Remarkety_Mgconnector_Model_Install::MODE_INSTALL,
             Remarkety_Mgconnector_Model_Install::MODE_UPGRADE,
             Remarkety_Mgconnector_Model_Install::MODE_COMPLETE,
             Remarkety_Mgconnector_Model_Install::MODE_CONFIGURATION
-            )
-        )) {
+        ))) {
             throw new Mage_Core_Exception('Installation mode can not be handled.');
         }
 

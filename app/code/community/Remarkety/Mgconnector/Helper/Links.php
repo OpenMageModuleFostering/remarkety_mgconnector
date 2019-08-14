@@ -13,29 +13,20 @@ class Remarkety_Mgconnector_Helper_Links extends Mage_Core_Helper_Abstract
             return;
         }
 
-        $mark_grouped_parent = Mage::getStoreConfig('remarkety/mgconnector/mark_group_parent');
-
         $connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-        if ($mark_grouped_parent){
-            $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_relation');
-            $childField = "child_id";
-        } else {
-            $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_super_link');
-            $childField = "product_id";
-        }
+        $tableName = Mage::getSingleton('core/resource')->getTableName('catalog_product_super_link');
 
-        $query = 'select '.$childField.',parent_id from ' . $tableName;
+        $query = 'select product_id,parent_id from ' . $tableName;
         $this->simpleIds = array();
         $this->parentId = array();
 
         foreach ($connection->fetchAll($query) as $row) {
-            $productId = $row[$childField];
+            $productId = $row['product_id'];
             $parentId = $row['parent_id'];
 
             if (!isset($this->simpleIds[$parentId])) {
                 $this->simpleIds[$parentId] = array();
             }
-
             $this->simpleIds[$parentId][] = $productId;
             $this->parentId[$productId] = $parentId;
         }
@@ -68,7 +59,6 @@ class Remarkety_Mgconnector_Helper_Links extends Mage_Core_Helper_Abstract
         if (isset($this->simpleIds[$productId])) {
             return $this->simpleIds[$productId];
         }
-
         return null;
     }
 }

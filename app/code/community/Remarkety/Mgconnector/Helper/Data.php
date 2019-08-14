@@ -14,7 +14,7 @@ class Remarkety_Mgconnector_Helper_Data extends Mage_Core_Helper_Abstract
      *
      * @return string
      */
-    public function getInstalledVersion()
+	public function getInstalledVersion()
     {
         return Mage::getConfig()->getModuleConfig("Remarkety_Mgconnector")->version;
     }
@@ -59,15 +59,13 @@ class Remarkety_Mgconnector_Helper_Data extends Mage_Core_Helper_Abstract
             $mode = $forceMode;
         }
 
-        if(!in_array(
-            $mode, array(
+        if(!in_array($mode, array(
             Remarkety_Mgconnector_Model_Install::MODE_INSTALL_CREATE,
             Remarkety_Mgconnector_Model_Install::MODE_INSTALL_LOGIN,
             Remarkety_Mgconnector_Model_Install::MODE_UPGRADE,
             Remarkety_Mgconnector_Model_Install::MODE_COMPLETE,
             Remarkety_Mgconnector_Model_Install::MODE_WELCOME,
-            )
-        )) {
+        ))) {
             throw new Mage_Core_Exception('Installation mode can not be handled.');
         }
 
