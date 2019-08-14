@@ -1,3 +1,8 @@
+1.4.5.0
+-------
+- bugfix in install model
+- Getting categories from parent products
+
 1.4.4.0
 -------
 - Optionally attach child products to parent grouped product

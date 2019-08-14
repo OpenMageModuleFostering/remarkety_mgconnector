@@ -104,8 +104,8 @@ class Remarkety_Mgconnector_Model_Install
         $this->_data['key'] = $this->_generateApiKey();
         Mage::getModel('core/config')->saveConfig('remarkety/mgconnector/api_key', $this->_data['key']);
 
-        $wsFirstName = array_key_exists('first_name', $this->data) && !empty($this->_data['first_name']) ? $this->_data['first_name'] : "Remarkety";
-        $wsLastName = array_key_exists('last_name', $this->data) && !empty($this->_data['last_name']) ? $this->_data['last_name'] : "API";
+        $wsFirstName = array_key_exists('first_name', $this->_data) && !empty($this->_data['first_name']) ? $this->_data['first_name'] : "Remarkety";
+        $wsLastName = array_key_exists('last_name', $this->_data) && !empty($this->_data['last_name']) ? $this->_data['last_name'] : "API";
 
         if(!$this->_getWebServiceUser()->getId()) {
             $email = $this->_data['email'];

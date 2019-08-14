@@ -239,7 +239,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         return $data;
     }
 
-    private function _productCategories(Mage_Catalog_Model_Product $product)
+    private function _productCategories(Mage_Catalog_Model_Product $product, $getFromParent = true)
     {
         $categoryCollection = $product->getCategoryCollection()
             ->addAttributeToSelect('name');
@@ -268,6 +268,14 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                     $this->_categoryCache[$categoryId] = implode(" / ", $categoryTree);
                 }
                 $categories[] = $this->_categoryCache[$categoryId];
+            }
+        }
+        //if no categories found, get from parent product
+        if($getFromParent && empty($categories)){
+            $parent_id = $this->getProductParentId($product);
+            if($parent_id !== false){
+                $parentProduct = $this->loadProduct($parent_id);
+                return $this->_productCategories($parentProduct, false);
             }
         }
 
