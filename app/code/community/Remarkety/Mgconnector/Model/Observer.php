@@ -3,14 +3,13 @@
 /**
  * Observer model, which handle few events and send post request
  *
- * @category Remarkety
- * @package  Remarkety_Mgconnector
- * @author   Piotr Pierzak <piotrek.pierzak@gmail.com>
+ * @category   Remarkety
+ * @package    Remarkety_Mgconnector
+ * @author     Piotr Pierzak <piotrek.pierzak@gmail.com>
  */
 
-if (!defined("REMARKETY_LOG")) {
+if (!defined("REMARKETY_LOG"))
     define('REMARKETY_LOG', 'remarkety_mgconnector.log');
-}
 
 class Remarkety_Mgconnector_Model_Observer
 {
@@ -31,6 +30,29 @@ class Remarkety_Mgconnector_Model_Observer
     protected $_address = null;
     protected $_origAddressData = null;
 
+    private $response_mask = array(
+        'product' => array(
+            'id',
+            'sku',
+            'title',
+            'created_at',
+            'updated_at',
+            'type_id',
+            'base_image',
+            'thumbnail_image',
+            'enabled',
+            'visibility',
+            'categories',
+            'small_image',
+            'price',
+            'special_price',
+            'cost',
+            'url',
+            'is_in_stock',
+            'parent_id'
+        )
+    );
+
     public function __construct()
     {
         $this->_token = Mage::getStoreConfig('remarkety/mgconnector/api_key');
@@ -40,6 +62,7 @@ class Remarkety_Mgconnector_Model_Observer
         }
         $this->_intervals = explode(',', $intervals);
     }
+
 
 
     public function triggerCustomerAddressBeforeUpdate($observer)
@@ -68,10 +91,10 @@ class Remarkety_Mgconnector_Model_Observer
                 array(
                     'header' => Mage::helper('salesrule')->__('Expiration date'),
                     'index' => 'expiration_date',
-                    'type' => 'datetime',
-                    'default' => '-',
-                    'align' => 'center',
-                    'width' => '160',
+                    'type'   => 'datetime',
+                    'default'   => '-',
+                    'align'  => 'center',
+                    'width'  => '160'
                 ),
                 'created_at'
             );
@@ -119,6 +142,60 @@ class Remarkety_Mgconnector_Model_Observer
         );
 
         return $this;
+    }
+
+    private function shouldUpdateRule($rule){
+        $now = new DateTime();
+        $currentFromDate = new DateTime($rule->getFromDate());
+        $currentToDate = new DateTime($rule->getToDate());
+        $now->setTime(0, 0, 0);
+        $currentFromDate->setTime(0, 0, 0);
+        $currentToDate->setTime(0, 0, 0);
+        if($currentFromDate <= $now && $currentToDate >= $now && $rule->getIsActive()){
+            $oldData = $rule->getOrigData();
+            if(!is_null($oldData) && isset($oldData['is_active']) && $oldData['is_active'] == 1){
+                //check if was already active so no need to update
+                $oldFromDate = new DateTime($oldData['from_date']);
+                $oldToDate = new DateTime($oldData['to_date']);
+                $oldFromDate->setTime(0, 0, 0);
+                $oldToDate->setTime(0, 0, 0);
+                if($rule->hasDataChanges()) {
+                    return true;
+                }
+                if($currentFromDate <= $now && $currentToDate >= $now){
+                    return false;
+                }
+            }
+            return true;
+        }
+        //check if was already active but not active now so need to update
+        $oldData = $rule->getOrigData();
+        if(!is_null($oldData) && isset($oldData['is_active']) && $oldData['is_active'] == 1){
+            $currentFromDate = new DateTime($oldData['from_date']);
+            $currentToDate = new DateTime($oldData['to_date']);
+            $currentFromDate->setTime(0, 0, 0);
+            $currentToDate->setTime(0, 0, 0);
+            if($currentFromDate <= $now && $currentToDate >= $now){
+                return true;
+            }
+        }
+        return false;
+    }
+    public function triggerCatalogRuleBeforeUpdate($observer)
+    {
+
+        $this->rule = $observer->getEvent()->getRule();
+        $this->rule->setUpdatedAt(date("Y-m-d H:i:s"));
+        if($this->shouldUpdateRule($this->rule)) {
+            $this->_queueRequest('catalogruleupdated', array('ruleId' => $this->rule->getId()), 1, null);
+            //$this->sendProductPrices($this->rule->getId());
+        }
+    }
+
+    public function triggerCatalogRuleBeforeDelete($observer){
+    }
+
+    public function triggerCatalogRuleAfterDelete($observer){
     }
 
     public function triggerCustomerUpdate($observer)
@@ -309,7 +386,8 @@ class Remarkety_Mgconnector_Model_Observer
             'curloptions' => array(
                 // CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HEADER => true,
-                CURLOPT_CONNECTTIMEOUT => self::REMARKETY_TIMEOUT
+                CURLOPT_CONNECTTIMEOUT => self::REMARKETY_TIMEOUT,
+                CURLOPT_SSL_VERIFYPEER => false
                 // CURLOPT_SSL_CIPHER_LIST => "RC4-SHA"
             ),
         );
@@ -391,7 +469,7 @@ class Remarkety_Mgconnector_Model_Observer
     {
         $queueModel = Mage::getModel('mgconnector/queue');
 
-        if (!empty($this->_intervals[$attempt - 1])) {
+        if(!empty($this->_intervals[$attempt-1])) {
             $now = time();
             $nextAttempt = $now + (int)$this->_intervals[$attempt - 1] * 60;
             if ($queueId) {
@@ -410,15 +488,12 @@ class Remarkety_Mgconnector_Model_Observer
                     )
                 );
             }
-
             return $queueModel->save();
         } elseif ($queueId) {
             $queueModel->load($queueId);
             $queueModel->setStatus(0);
-
             return $queueModel->save();
         }
-
         return false;
     }
 
@@ -429,7 +504,6 @@ class Remarkety_Mgconnector_Model_Observer
             'timestamp' => (string)time(),
             'event_id' => $eventType,
         );
-
         return $arr;
     }
 
@@ -562,7 +636,7 @@ class Remarkety_Mgconnector_Model_Observer
         $arr = array(
             'email' => $this->_subscriber->getSubscriberEmail(),
             'accepts_marketing' => false,
-            'storeId' => $store->getStoreId(),
+            'storeId' => $store->getStoreId()
         );
 
         return $arr;
@@ -572,10 +646,21 @@ class Remarkety_Mgconnector_Model_Observer
     {
         $sent = 0;
         foreach ($queueItems as $_queue) {
-            $result = $this->makeRequest($_queue->getEventType(),
-                unserialize($_queue->getPayload()),
-                $resetAttempts ? 1 : ($_queue->getAttempts() + 1),
-                $_queue->getId());
+            $result = false;
+            if($_queue->getEventType() == "catalogruleupdated"){
+                //create queue for price rule update
+                $ruleData = unserialize($_queue->getPayload());
+                $ruleId = isset($ruleData['ruleId']) ? $ruleData['ruleId'] : false;
+                if($ruleId){
+                    $result = $this->sendProductPrices($ruleId);
+                }
+            } else {
+                //send event to remarkety
+                $result = $this->makeRequest($_queue->getEventType(),
+                    unserialize($_queue->getPayload()),
+                    $resetAttempts ? 1 : ($_queue->getAttempts() + 1),
+                    $_queue->getId());
+            }
             if ($result) {
                 Mage::getModel('mgconnector/queue')
                     ->load($_queue->getId())
@@ -600,4 +685,156 @@ class Remarkety_Mgconnector_Model_Observer
 
         return $this;
     }
+
+    private function _filter_output_data($data, $field_set = array())
+    {
+        if (empty($field_set)) return $data;
+
+        foreach (array_keys($data) as $key) {
+            if (isset($field_set[$key]) && is_array($field_set[$key])) {
+                $data[$key] = $this->_filter_output_data($data[$key], $field_set[$key]);
+            } else if (isset($field_set['*']) && is_array($field_set['*'])) {
+                $data[$key] = $this->_filter_output_data($data[$key], $field_set['*']);
+            } else {
+                if (!in_array($key, $field_set)) unset ($data[$key]);
+            }
+        }
+        return $data;
+    }
+
+    protected function _productsUpdate($storeId, $data, $toQueue = false)
+    {
+        if($toQueue){
+            $this->_queueRequest('products/update', array('storeId' => $storeId, 'products' => $data), 1, null);
+        } else {
+            $this->makeRequest('products/update', array('storeId' => $storeId, 'products' => $data));
+        }
+
+        return $this;
+    }
+
+
+    public function sendProductPrices($ruleId = null)
+    {
+        // Fix for scenario when method is called directly as cron.
+        if (is_object($ruleId)) {
+            $ruleId = null;
+        }
+
+        $yesterday_start = date('Y-m-d 00:00:00',strtotime("-1 days"));
+        $yesterday_end   = date('Y-m-d 23:59:59',strtotime("-1 days"));
+        $today_start     = date('Y-m-d 00:00:00');
+        $today_end       = date('Y-m-d 23:59:59');
+
+        Mage::log('sendProductPrices started', null, 'remarkety-ext.log');
+
+        $collection = Mage::getModel('catalogrule/rule')->getCollection();
+        $collection->getSelect()
+            ->joinLeft(
+                array('catalogrule_product' => Mage::getSingleton('core/resource')->getTableName('catalogrule/rule_product')),
+                'main_table.rule_id = catalogrule_product.rule_id',
+                array('product_id')
+            )
+            ->group(['main_table.rule_id', 'catalogrule_product.product_id']);
+
+        if(is_null($ruleId)){
+            $collection->getSelect()
+                ->where('(main_table.from_date >= ?', $today_start)->where('main_table.from_date <= ?)', $today_end)
+                ->orWhere('(main_table.to_date >= ? ',$yesterday_start)->where('main_table.to_date <= ?)', $yesterday_end)
+                ->orWhere('(main_table.updated_at >= ? ',$yesterday_start)->where('main_table.updated_at <= ?)', $yesterday_end);
+        } else {
+            $collection->getSelect()
+                ->where('main_table.rule_id = ?', $ruleId);
+        }
+        $useQueue = !is_null($ruleId);
+
+//        $i = 0;
+        $ruleProducts = array();
+        foreach($collection->getData() as $c) {
+            if (!isset($ruleProducts[$c['rule_id']]))
+                $ruleProducts[$c['rule_id']] = array();
+            $ruleProducts[$c['rule_id']][] = $c['product_id'];
+        }
+
+        $storeUrls = array();
+        foreach($ruleProducts as $ruleId => $products) {
+            /**
+             * @var Mage_CatalogRule_Model_Rule
+             */
+            $catalog_rule = Mage::getModel('catalogrule/rule')->load($ruleId);
+            $websiteIds = $catalog_rule->getWebsiteIds();
+            foreach ($websiteIds as $websiteId) {
+                $website = Mage::getModel('core/website')->load($websiteId);
+                foreach ($website->getGroups() as $group) {
+                    $stores = $group->getStores();
+                    foreach ($stores as $store) {
+                        if(!isset($storeUrls[$store->getStoreId()]))
+                            $storeUrls[$store->getStoreId()] = Mage::app()->getStore($store->getStoreId())->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB, true);
+                        $configInstalled = $store->getConfig(Remarkety_Mgconnector_Model_Install::XPATH_INSTALLED);
+                        $isRemarketyInstalled = !empty($configInstalled);
+                        if ($isRemarketyInstalled) {
+                            $rows = array();
+                            $i = 0;
+                            foreach($products as $productId){
+                                if($i >= 10){
+                                    $this->_productsUpdate($store->getStoreId(), $rows, $useQueue);
+                                    $i = 0;
+                                    $rows = array();
+                                }
+                                $product = Mage::getModel('catalog/product')->load($productId);
+                                $pWebsites = $product->getWebsiteIds();
+                                if(in_array($websiteId, $pWebsites)) {
+                                    $rows[] = $this->_prepareProductData($product, $store->getStoreId(), $storeUrls[$store->getStoreId()]);
+                                    $i++;
+                                }
+                            }
+                            if($i > 0){
+                                $this->_productsUpdate($store->getStoreId(), $rows, $useQueue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private function _prepareProductData($product,$mage_store_id,$storeUrl)
+    {
+        $product->setStoreId($mage_store_id)->setCustomerGroupId(0);
+
+        $productData = $product->toArray();
+        $productData['base_image'] = array('src' => Mage::getModel('mgconnector/core')->getImageUrl($product, 'image', $mage_store_id));
+        $productData['small_image'] = array('src' => Mage::getModel('mgconnector/core')->getImageUrl($product, 'small', $mage_store_id));
+        $productData['thumbnail_image'] = array('src' => Mage::getModel('mgconnector/core')->getImageUrl($product, 'thumbnail', $mage_store_id));
+
+        $cats = Mage::getModel('mgconnector/core')->_productCategories($product);
+        $categoriesNames = array();
+        foreach($cats as $catName){
+            $categoriesNames[] = array('name' => $catName);
+        }
+        $productData['categories'] =  $categoriesNames;
+
+        $price = Mage::getModel('catalogrule/rule')->calcProductPriceRule($product,$product->getPrice());
+        $productData['price'] = empty($price) ? $product->getFinalPrice() : $price;
+        $productData['special_price'] = $product->getSpecialPrice();
+
+        $prodUrl = Mage::getModel('mgconnector/core')->getProdUrl($product, $storeUrl, $mage_store_id);
+        $productData['id'] = $productData['entity_id'];
+        $productData['url'] = $prodUrl;
+        $productData['title'] = Mage::getModel('mgconnector/core')->getProductName($product, $mage_store_id);
+        $productData['enabled'] = $product->isSalable() && $product->isVisibleInSiteVisibility();
+        $productData['visibility'] = $product->getVisibility();
+
+
+        $parent_id = Mage::getModel('mgconnector/core')->getProductParentId($product);
+        if($parent_id !== false){
+            $productData['parent_id']  = $parent_id;
+        }
+
+        $productData = $this->_filter_output_data($productData, $this->response_mask['product']);
+
+        return $productData;
+    }
+
 }

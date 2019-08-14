@@ -49,6 +49,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         }
 
         Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
 
         Mage::getSingleton('core/session')->unsRemarketyLastResponseMessage();
         Mage::getSingleton('core/session')->unsRemarketyLastResponseStatus();
@@ -94,6 +95,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         if($rmStoreId){
             $m->setRemarketyPublicId($store_id, $rmStoreId);
             Mage::app()->getCacheInstance()->cleanType('config');
+            Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
         }
         $this->_redirect('*/install/install', array('mode' => 'welcome'));
     }
@@ -113,6 +115,7 @@ class Remarkety_Mgconnector_Adminhtml_InstallController extends Mage_Adminhtml_C
         $m = Mage::getModel('mgconnector/webtracking');
         $m->setRemarketyPublicId($store_id, null);
         Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
         $this->_redirect('*/install/install', array('mode' => 'welcome'));
     }
 

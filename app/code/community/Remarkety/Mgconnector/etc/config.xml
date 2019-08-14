@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Remarkety_Mgconnector>
-            <version>1.4.7.3</version>
+            <version>1.4.8.8</version>
         </Remarkety_Mgconnector>
     </modules>
     <global>
@@ -45,6 +45,15 @@
             </mgconnector>
         </blocks>
         <events>
+            <catalogrule_rule_save_before>
+                <observers>
+                    <remarkety_catalogrule_rule_save_before>
+                        <type>singleton</type>
+                        <class>mgconnector/observer</class>
+                        <method>triggerCatalogRuleBeforeUpdate</method>
+                    </remarkety_catalogrule_rule_save_before>
+                </observers>
+            </catalogrule_rule_save_before>
             <catalog_product_save_after>
                 <observers>
                     <remarkety_catalog_product_save_after>
@@ -172,6 +181,10 @@
                 <schedule><cron_expr>*/1 * * * *</cron_expr></schedule>
                 <run><model>mgconnector/observer::run</model></run>
             </mgconnector_cron>
+            <mgconnector_prices>
+                <schedule><cron_expr>0 0 * * *</cron_expr></schedule>
+                <run><model>mgconnector/observer::sendProductPrices</model></run>
+            </mgconnector_prices>
         </jobs>
     </crontab>
     <default>

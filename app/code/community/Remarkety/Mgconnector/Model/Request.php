@@ -12,7 +12,7 @@ class Remarkety_Mgconnector_Model_Request
     const REMARKETY_URI = 'https://app.remarkety.com/public/install/notify';
     const REMARKETY_STOREID_URI = 'https://app.remarkety.com/public/install/get-store-id';
     const REMARKETY_METHOD = 'POST';
-    const REMARKETY_TIMEOUT = 10;
+    const REMARKETY_TIMEOUT = 30;
     const REMARKETY_VERSION = 0.9;
     const REMARKETY_PLATFORM = 'MAGENTO';
     const REMARKETY_OEM = 'remarkety';
@@ -22,12 +22,11 @@ class Remarkety_Mgconnector_Model_Request
         return array(
             'adapter' => 'Zend_Http_Client_Adapter_Curl',
             'curloptions' => array(
-//                CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HEADER => true,
                 CURLOPT_CONNECTTIMEOUT => self::REMARKETY_TIMEOUT,
-//	            CURLOPT_SSL_CIPHER_LIST => "RC4-SHA"
-//                CURLOPT_SSL_VERIFYPEER => false,
             ),
+            'timeout' => self::REMARKETY_TIMEOUT,
+            'request_timeout' => self::REMARKETY_TIMEOUT
         );
     }
 

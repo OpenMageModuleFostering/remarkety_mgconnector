@@ -1,3 +1,36 @@
+1.4.8.7
+-------
+- Bugfix - Support PHP version 5.3
+
+1.4.8.6
+-------
+- Bugfix - Support PHP version 5.3
+
+1.4.8.5
+-------
+- Bugfix - Error during cron product prices send has been fixed
+
+1.4.8.4
+-------
+- Bugfix - Only get carts with email address
+- Bugfix - Only get carts for a specific store
+
+1.4.8.3
+-------
+- Bugfix - Install page had missing stores
+
+1.4.8.2
+-------
+- Bugfix - Error in installation when strict error mode is enabled in PHP
+
+1.4.8.1
+-------
+- Bugfix - Salable products incorrect value
+
+1.4.8.0
+-------
+- Add webhooks and cron job for pushing product price updates
+
 1.4.7.3
 -------
 Bugfix - get configuration settings from the request parameter instead of the headers

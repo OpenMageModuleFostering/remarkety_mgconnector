@@ -22,6 +22,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
     const XPATH_CATEGORIES_TO_IGNORE = 'remarkety/mgconnector/categories-to-ignore';
     private $_categoriesToIgnore = array();
 
+    private $configurable_product_model = null;
+
     private $_productCache = array();
     private $_categoryCache = array();
 
@@ -241,7 +243,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         return $data;
     }
 
-    private function _productCategories(Mage_Catalog_Model_Product $product, $getFromParent = true)
+    public function _productCategories(Mage_Catalog_Model_Product $product, $getFromParent = true)
     {
         $categoryCollection = $product->getCategoryCollection()
             ->addAttributeToSelect('name');
@@ -538,6 +540,11 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
             $ordersCollection = Mage::getModel("sales/order")
                 ->getCollection()
+                ->join(
+                    array('payment' => 'sales/order_payment'),
+                    'main_table.entity_id=payment.parent_id',
+                    array('payment_method' => 'payment.method')
+                )
                 ->addOrder('updated_at', 'ASC')
                 ->addAttributeToSelect('*');
 
@@ -597,6 +604,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             */
 
             $productIdsToLoad = array();
+            $paymentMethods = array(); //hash table for payment code->name
             $orderIds = array();
 
             foreach ($ordersCollection as $order) {
@@ -622,6 +630,19 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
                 if (!empty($addressID)) {
                     $address = Mage::getModel('sales/order_address')->load($addressID)->toArray();
                     $orderData['address'] = $address;
+                }
+
+                //convert payment method code to name
+                if(!empty($orderData['payment_method'])){
+                    if(isset($paymentMethods[$orderData['payment_method']])){ //use hash table if found
+                        $orderData['payment_method'] = $paymentMethods[$orderData['payment_method']];
+                    } else { //get name from config
+                        $method = Mage::getStoreConfig('payment/'.$orderData['payment_method'].'/title');
+                        if(!empty($method)){
+                            $paymentMethods[$orderData['payment_method']] = $method;
+                            $orderData['payment_method'] = $method;
+                        }
+                    }
                 }
 
                 $storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
@@ -658,6 +679,7 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $paymentMethods = $this->loadPaymentMethods($orderIds);
 
             // Load the products all at once and populate the items
+
             $this->loadProducts($mage_store_view_id, $productIdsToLoad);
 
             $ret = array();
@@ -720,14 +742,13 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         try {
             $quotesCollection = Mage::getResourceModel('reports/quote_collection');
 
-            // $quotesCollection->prepareForAbandonedReport($this->_storeIds);
             $quotesCollection->addFieldToFilter('items_count', array('neq' => '0'))
                 ->addFieldToFilter('main_table.is_active', '1')
-                ->addSubtotal($this->_storeIds, null)
-                //->addCustomerData($filter)
+                ->addFieldToFilter('main_table.customer_email', array('notnull' => true))
+                ->addSubtotal(array($mage_store_view_id), null)
                 ->setOrder('updated_at');
-            if (is_array($this->_storeIds)) {
-                $this->addFieldToFilter('store_id', array('in' => $this->_storeIds));
+            if (is_numeric($mage_store_view_id)) {
+                $quotesCollection->addFieldToFilter('store_id', array('eq' => $mage_store_view_id));
             }
 
             if ($updated_at_min != null) {
@@ -831,7 +852,15 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $ret = array();
         $myArgs = func_get_args();
         $this->simpleProductsStandalone = Mage::helper('mgconnector/configuration')->getValue('configurable_standalone', false);
-        try {
+        try
+        {
+            try {
+                $store = Mage::app()->getStore($mage_store_id);
+                Mage::app()->setCurrentStore($store);
+            } catch (Exception $ex){
+                $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_ERROR, "Cannot set active store", $myArgs);
+            }
+
             $this->_debug(__FUNCTION__, REMARKETY_MGCONNECTOR_CALLED_STATUS, null, $myArgs);
             $productCollectionWithPrices = Mage::getModel("catalog/product")
                 ->getCollection()
@@ -1312,8 +1341,8 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
         $url = (string)Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . 'remarkety/recovery/cart/quote_id/' . $id;
         return $url;
     }
-
-    private function getProductName($product, $mage_store_view_id){
+    
+    public function getProductName($product, $mage_store_view_id){
         $name = '';
         if(!$this->simpleProductsStandalone && !in_array($product->type_id, $this->_groupedTypes)) {
             $this->_debug(__FUNCTION__, null, "not config prod id ".$product->getId(), '');
@@ -1376,6 +1405,14 @@ class Remarkety_Mgconnector_Model_Core extends Mage_Core_Model_Abstract {
             $this->_log(__FUNCTION__, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage(), $myArgs);
             return $this->_wrapResponse(null, REMARKETY_MGCONNECTOR_FAILED_STATUS, $e->getMessage());
         }
+    }
+
+    private function getConfigProdModel()
+    {
+        if ($this->configurable_product_model == null) {
+            $this->configurable_product_model = Mage::getModel('catalog/product_type_configurable');
+        }
+        return $this->configurable_product_model;
     }
 
     private function loadProduct($productId) {

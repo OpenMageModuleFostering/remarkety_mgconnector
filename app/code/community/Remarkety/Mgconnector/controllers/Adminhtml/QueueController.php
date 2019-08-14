@@ -71,6 +71,8 @@ class Remarkety_Mgconnector_Adminhtml_QueueController extends Mage_Adminhtml_Con
 		    }
 
 			Mage::app()->getCacheInstance()->cleanType('config');
+            Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
+
     		$this->_getSession()->addSuccess($this->__('Configuration has been saved.'));
     	}
     

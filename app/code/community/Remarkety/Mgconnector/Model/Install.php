@@ -230,6 +230,7 @@ class Remarkety_Mgconnector_Model_Install
 
         // Reinitialize configuration
         Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
 
         return $this;
     }
@@ -285,6 +286,7 @@ class Remarkety_Mgconnector_Model_Install
 
         // Reinitialize configuration
         Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
 
         return $this;
     }

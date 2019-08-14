@@ -23,6 +23,7 @@ Class Remarkety_Mgconnector_Model_Webtracking extends Mage_Core_Model_Abstract
             $store_id
         );
         Mage::app()->getCacheInstance()->cleanType('config');
+        Mage::dispatchEvent('adminhtml_cache_refresh_type', array('type' => 'config'));
     }
 
     public static function getBypassCache()

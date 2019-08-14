@@ -27,7 +27,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
             );
 
             foreach ($_website->getGroups() as $_group) {
-                $stores[$_website->getCode()]['store_groups'][$_group->getCode()] = array(
+                $stores[$_website->getCode()]['store_groups'][$_group->getGroupId()] = array(
                     'name' => $_group->getName(),
                     'id' => $_group->getGroupId(),
                 );
@@ -35,7 +35,7 @@ class Remarkety_Mgconnector_Block_Adminhtml_Install_Welcome_Store extends Mage_A
                 foreach ($_group->getStores() as $_store) {
                     $isInstalled = $_store->getConfig(Remarkety_Mgconnector_Model_Install::XPATH_INSTALLED);
                     $webtracking = $wtModel->getRemarketyPublicId($_store->getStoreId());
-                    $stores[$_website->getCode()]['store_groups'][$_group->getCode()]['store_views'][$_store->getCode()] = array(
+                    $stores[$_website->getCode()]['store_groups'][$_group->getGroupId()]['store_views'][$_store->getCode()] = array(
                         'name' => $_store->getName(),
                         'id' => $_store->getStoreId(),
                         'isInstalled' => $isInstalled,
