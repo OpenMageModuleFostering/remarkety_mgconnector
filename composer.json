@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/Remarkety_Mgconnector",
+    "name": "OpenMageModuleFostering\/Remarkety_Mgconnector",
     "type": "magento-module",
     "license": "GPL-v3",
     "homepage": "",
     "description": "Remarkety Magento Connector",
     "authors": [
-    {
-        "name": "Remarkety",
-        "email": "support@remarkety.com"
-    }
-],
+        {
+            "name": "Remarkety",
+            "email": "support@remarkety.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
